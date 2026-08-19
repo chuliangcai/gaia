@@ -1,0 +1,85 @@
+# =========================================================
+# Gaia Gateway 部署（仅消费 Dubbo，不注册服务）
+# =========================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: gaia-gateway
+  namespace: gaia
+spec:
+  type: ClusterIP
+  selector:
+    app: gaia-gateway
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gaia-gateway
+  namespace: gaia
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: gaia-gateway
+  template:
+    metadata:
+      labels:
+        app: gaia-gateway
+    spec:
+      serviceAccountName: gaia-dubbo
+      containers:
+        - name: gaia-gateway
+          image: registry.example.com/gaia/gaia-gateway:1.0.0
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: DUBBO_REGISTRY_ADDRESS
+              value: kubernetes://kubernetes.default.svc.cluster.local:443
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 15
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 2
+              memory: 2Gi
+---
+# =========================================================
+# RBAC：Gateway / Provider 需要读取 K8s Endpoints 以发现 Provider
+# =========================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gaia-dubbo
+  namespace: gaia
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gaia-dubbo
+rules:
+  - apiGroups: [""]
+    resources: ["endpoints", "pods", "services"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gaia-dubbo
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: gaia-dubbo
+subjects:
+  - kind: ServiceAccount
+    name: gaia-dubbo
+    namespace: gaia

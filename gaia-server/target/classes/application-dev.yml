@@ -1,0 +1,10 @@
+# ===================== 开发环境：Dubbo 直连，绕过注册中心 =====================
+dubbo:
+  # 覆盖默认的 K8s registry
+  registry:
+    address: # 留空 → 走 @DubboService 端口直连模式
+
+logging:
+  level:
+    com.gaia: DEBUG
+    org.apache.dubbo: INFO

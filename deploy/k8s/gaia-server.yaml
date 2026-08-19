@@ -1,0 +1,61 @@
+# =========================================================
+# Gaia 服务进程 K8s 资源（Dubbo 服务自动注册到 K8s API）
+# =========================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: gaia-server
+  namespace: gaia
+spec:
+  type: ClusterIP
+  selector:
+    app: gaia-server
+  ports:
+    - name: tri
+      port: 20881
+      targetPort: 20881
+    - name: http
+      port: 8081
+      targetPort: 8081
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gaia-server
+  namespace: gaia
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gaia-server
+  template:
+    metadata:
+      labels:
+        app: gaia-server
+    spec:
+      serviceAccountName: gaia-dubbo
+      containers:
+        - name: gaia-server
+          image: registry.example.com/gaia/gaia-server:1.0.0          # 发布所有 Dubbo Provider（如 SignService）
+          ports:
+            - containerPort: 20881
+              name: tri
+            - containerPort: 8081
+              name: http
+          env:
+            - name: MYSQL_HOST
+              value: gaia-mysql
+            - name: REDIS_HOST
+              value: gaia-redis
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8081
+            initialDelaySeconds: 20
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 2
+              memory: 2Gi

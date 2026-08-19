@@ -1,0 +1,22 @@
+# =========================================================
+# Gaia 网关 Ingress（HTTP，无 TLS、无 host）
+# =========================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gaia-gateway
+  namespace: gaia
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "2m"
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gaia-gateway
+                port:
+                  number: 8080
