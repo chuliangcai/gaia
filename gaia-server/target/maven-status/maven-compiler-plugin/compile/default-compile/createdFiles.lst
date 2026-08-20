@@ -1,8 +1,0 @@
-com/gaia/server/service/impl/SignServiceImpl.class
-com/gaia/server/entity/UserSignRecord.class
-com/gaia/server/lock/RedisLock.class
-com/gaia/server/service/SignBitMapService.class
-com/gaia/server/config/JedisConfig.class
-com/gaia/server/service/SignRewardRule.class
-com/gaia/server/GaiaServerApplication.class
-com/gaia/server/mapper/UserSignRecordMapper.class

@@ -1,8 +1,0 @@
-/Users/apple001/data/projects/gaia/gaia-server/src/main/java/com/gaia/server/config/JedisConfig.java
-/Users/apple001/data/projects/gaia/gaia-server/src/main/java/com/gaia/server/service/impl/SignServiceImpl.java
-/Users/apple001/data/projects/gaia/gaia-server/src/main/java/com/gaia/server/lock/RedisLock.java
-/Users/apple001/data/projects/gaia/gaia-server/src/main/java/com/gaia/server/entity/UserSignRecord.java
-/Users/apple001/data/projects/gaia/gaia-server/src/main/java/com/gaia/server/service/SignBitMapService.java
-/Users/apple001/data/projects/gaia/gaia-server/src/main/java/com/gaia/server/GaiaServerApplication.java
-/Users/apple001/data/projects/gaia/gaia-server/src/main/java/com/gaia/server/service/SignRewardRule.java
-/Users/apple001/data/projects/gaia/gaia-server/src/main/java/com/gaia/server/mapper/UserSignRecordMapper.java
