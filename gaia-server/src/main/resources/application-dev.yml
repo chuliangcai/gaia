@@ -2,6 +2,9 @@
 # Dubbo Provider 通过启动参数 -Ddubbo.registry.register=false 跳过 K8s 注册中心推送
 # （避免 dev profile 改写 dubbo.registry.* 段导致 application/protocol 被覆盖）
 
+server:
+  port: 8081
+
 logging:
   level:
     com.gaia: DEBUG

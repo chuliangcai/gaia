@@ -1,6 +1,9 @@
 # 开发环境：Dubbo 走 @DubboReference(url=...) 直连，绕过注册中心
 # （application / protocol / provider / consumer 全部继承 application.yml，不在此文件覆盖）
 
+server:
+  port: 8080
+
 gaia:
   dubbo:
     sign:
