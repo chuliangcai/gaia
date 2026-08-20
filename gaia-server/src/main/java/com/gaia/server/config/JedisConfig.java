@@ -47,6 +47,9 @@ public class JedisConfig {
         config.setTestOnBorrow(true);
         config.setTestWhileIdle(true);
 
+        // 禁用 JMX 自动注册避免与 Spring JMX 重复注册冲突
+        config.setJmxEnabled(false);
+
         if (password == null || password.isEmpty()) {
             return new JedisPool(config, host, port, timeout, null, database);
         }

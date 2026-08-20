@@ -38,6 +38,25 @@ gaia:
       # 默认占位；dev profile 会覆盖
       url: ${SIGN_DUBBO_URL:}
 
+# ===================== Springdoc OpenAPI =====================
+springdoc:
+  api-docs:
+    # 默认 /v3/api-docs，保持默认
+    enabled: true
+  swagger-ui:
+    # 默认 /swagger-ui.html
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: alpha
+    tags-sorter: alpha
+  # 应用基本信息（也可在 Java 代码里通过 OpenAPI Bean 注入）
+  info:
+    title: Gaia Gateway API
+    description: C 端互动平台统一 HTTP 网关，所有 Dubbo RPC 服务的 HTTP 入口
+    version: 1.0.0
+    contact:
+      name: Gaia Team
+
 # ===================== 监控 =====================
 management:
   endpoints:
