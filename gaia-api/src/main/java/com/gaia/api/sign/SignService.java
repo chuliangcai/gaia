@@ -11,9 +11,6 @@ import java.util.List;
  */
 public interface SignService {
 
-    String GROUP = "sign";
-    String VERSION = "1.0.0";
-
     /**
      * 用户签到。
      *

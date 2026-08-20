@@ -1,6 +1,7 @@
 package com.gaia.gateway.controller;
 
 import com.gaia.api.sign.SignService;
+import com.gaia.common.constants.DubboConstants;
 import com.gaia.common.dto.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
@@ -21,8 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class SignController {
 
     @DubboReference(
-            group = SignService.GROUP,
-            version = SignService.VERSION,
+            group = DubboConstants.GROUP,
+            version = DubboConstants.VERSION,
             url = "${gaia.dubbo.sign.url}")
     private SignService signService;
 

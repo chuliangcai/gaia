@@ -1,5 +1,6 @@
 package com.gaia.gateway;
 
+import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -9,6 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * <p>本工程不承载任何业务逻辑，仅负责 HTTP 入口、Dubbo 引用以及监控暴露。</p>
  */
 @SpringBootApplication(scanBasePackages = {"com.gaia.gateway", "com.gaia.common"})
+@EnableDubbo
 public class GaiaGatewayApplication {
 
     public static void main(String[] args) {

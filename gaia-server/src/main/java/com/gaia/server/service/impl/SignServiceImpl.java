@@ -1,6 +1,7 @@
 package com.gaia.server.service.impl;
 
 import com.gaia.api.sign.SignService;
+import com.gaia.common.constants.DubboConstants;
 import com.gaia.server.lock.RedisLock;
 import com.gaia.server.mapper.UserSignRecordMapper;
 import com.gaia.server.entity.UserSignRecord;
@@ -30,7 +31,7 @@ import java.util.UUID;
  * </p>
  */
 @Slf4j
-@DubboService(group = SignService.GROUP, version = SignService.VERSION)
+@DubboService(group = DubboConstants.GROUP, version = DubboConstants.VERSION)
 public class SignServiceImpl implements SignService {
 
     private static final long LOCK_EXPIRE_MS = 5_000L;

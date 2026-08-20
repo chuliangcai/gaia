@@ -8,9 +8,6 @@ package com.gaia.api.lottery;
  */
 public interface LotteryService {
 
-    String GROUP = "lottery";
-    String VERSION = "1.0.0";
-
     /**
      * 健康检查。
      */

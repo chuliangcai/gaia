@@ -1,6 +1,7 @@
 package com.gaia.server.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -28,7 +29,8 @@ public class UserSignRecord implements Serializable {
     /** 签到日期 yyyy-MM-dd */
     private String signDate;
 
-    /** 年月 yyyyMM */
+    /** 年月 yyyyMM, MySQL 8 中 YEAR_MONTH 是关键字, 需反引号 */
+    @TableField(value = "`year_month`")
     private String yearMonth;
 
     /** 当次奖励积分 */

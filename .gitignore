@@ -1,0 +1,26 @@
+# Maven 构建产物
+target/
+**/target/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.classpath
+.project
+.settings/
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 日志 / 临时
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# Maven 本地仓库
+.m2/
