@@ -50,10 +50,20 @@
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
 
-        <!-- SkyWalking logback 适配：使 %tid 可在 pattern 中输出 -->
+        <!-- Zipkin / Brave：把 traceId 写入 MDC（由 Dubbo starter 装配 Brave Tracer） -->
         <dependency>
-            <groupId>org.apache.skywalking</groupId>
-            <artifactId>apm-toolkit-logback-1.x</artifactId>
+            <groupId>io.zipkin.brave</groupId>
+            <artifactId>brave-context-slf4j</artifactId>
+        </dependency>
+        <!-- Micrometer Observation → Brave 桥：让 MyBatis/JDBC 等也建 Brave span -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-brave</artifactId>
+        </dependency>
+        <!-- Dubbo 官方 Brave/Zipkin 集成：装配 Brave Tracer + Zipkin reporter + Dubbo TracingFilter -->
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-spring-boot-tracing-brave-zipkin-starter</artifactId>
         </dependency>
 
         <!-- MyBatis-Plus + MySQL -->
@@ -66,10 +76,22 @@
             <artifactId>mysql-connector-j</artifactId>
         </dependency>
 
-        <!-- Jedis -->
+        <!--
+          Spring Data Redis + Lettuce（自带 Micrometer Observation tracing，
+          可与 micrometer-tracing-bridge-brave 桥接，由 Spring Boot 3 自动为
+          每条 Redis 命令产出 Brave span，业务代码无需改动）。
+        -->
         <dependency>
-            <groupId>redis.clients</groupId>
-            <artifactId>jedis</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <!--
+          Lettuce 连接池基于 Apache Commons Pool 2 实现，
+          启用 spring.data.redis.lettuce.pool.* 必须显式引入该依赖。
+        -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
         </dependency>
 
         <!-- JDBC（@Transactional 等） -->
@@ -94,7 +116,7 @@
                     <skip>false</skip>
                     <!--
                       默认 jvmArguments 仅含 add-opens（避免 JDK 17 反射限制）。
-                      完整启动参数（skywalking agent / profile / dubbo 等）
+                      完整启动参数（profile / dubbo / zipkin.endpoint 等）
                       由根 pom 的 dev-server profile 注入：
                         mvn spring-boot:run -P dev-server
                     -->

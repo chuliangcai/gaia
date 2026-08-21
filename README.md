@@ -77,5 +77,5 @@ kubectl apply -f deploy/k8s/gateway-ingress.yaml
 ## 后续路线
 
 - gaia-module-lottery 二期实现：限流、Redis 库存、概率算法、防刷。
-- 接入 SkyWalking 做链路追踪。
+- 接入 Zipkin（`dubbo-spring-boot-tracing-brave-zipkin-starter` + `micrometer-tracing-bridge-brave`）做全链路追踪。
 - 引入 Spring Authorization Server 统一鉴权。

@@ -14,4 +14,5 @@ logging:
     com.gaia: DEBUG
     org.apache.dubbo: INFO
   pattern:
-    console: "%d{HH:mm:ss.SSS} [%thread] [tid=%X{tid:-}] %-5level %logger{36} - %msg%n"
+    # Brave 把 traceId/spanId 写入 MDC（Slf4jCurrentTraceContext）
+    console: "%d{HH:mm:ss.SSS} [%thread] [traceId=%X{traceId:-} spanId=%X{spanId:-}] %-5level %logger{36} - %msg%n"

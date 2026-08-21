@@ -1,10 +1,11 @@
 package com.gaia.server.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.connection.BitFieldSubCommands;
+import org.springframework.data.redis.connection.RedisStringCommands.BitOperation;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
-import redis.clients.jedis.args.BitOP;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -19,9 +20,14 @@ import java.util.List;
  *
  * <p>偏移量为日期（1-based）。每月一个 BitMap，自然按月归档，
  * 内存占用低且查询效率 O(1)。</p>
+ *
+ * <p>底层使用 {@link StringRedisTemplate}（Spring Data Redis + Lettuce），
+ * 由 Lettuce Micrometer Tracing 自动为每条 Redis 命令产出 Brave span，
+ * 业务代码无需显式埋点。</p>
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class SignBitMapService {
 
     private static final DateTimeFormatter YM_FORMATTER = DateTimeFormatter.ofPattern("yyyyMM");
@@ -29,11 +35,7 @@ public class SignBitMapService {
 
     private static final String KEY_PREFIX = "gaia:sign:bitmap:";
 
-    private final JedisPool jedisPool;
-
-    public SignBitMapService(JedisPool jedisPool) {
-        this.jedisPool = jedisPool;
-    }
+    private final StringRedisTemplate redisTemplate;
 
     /**
      * 设置某天已签到。
@@ -43,10 +45,8 @@ public class SignBitMapService {
     public boolean setSigned(long userId, LocalDate date) {
         String key = key(userId, date);
         long offset = date.getDayOfMonth() - 1L;
-        try (Jedis jedis = jedisPool.getResource()) {
-            Boolean before = jedis.setbit(key, offset, true);
-            return Boolean.FALSE.equals(before);
-        }
+        Boolean before = redisTemplate.opsForValue().setBit(key, offset, true);
+        return Boolean.FALSE.equals(before);
     }
 
     /**
@@ -55,9 +55,7 @@ public class SignBitMapService {
     public boolean isSigned(long userId, LocalDate date) {
         String key = key(userId, date);
         long offset = date.getDayOfMonth() - 1L;
-        try (Jedis jedis = jedisPool.getResource()) {
-            return jedis.getbit(key, offset);
-        }
+        return Boolean.TRUE.equals(redisTemplate.opsForValue().getBit(key, offset));
     }
 
     /**
@@ -69,13 +67,24 @@ public class SignBitMapService {
                 DateTimeFormatter.ofPattern("yyyyMMdd"));
         int daysInMonth = monthStart.lengthOfMonth();
 
+        // 用 BITFIELD 一次读出当月所有 bit，再在内存中解析，避免 N 次 GETBIT。
+        // Spring Data Redis 用 BitFieldSubCommands 表达。
+        BitFieldSubCommands subCommands = BitFieldSubCommands.create()
+                .get(BitFieldSubCommands.BitFieldType.unsigned(daysInMonth))
+                .valueAt(0L);
+
         List<String> result = new ArrayList<>();
-        try (Jedis jedis = jedisPool.getResource()) {
-            for (int day = 1; day <= daysInMonth; day++) {
-                if (Boolean.TRUE.equals(jedis.getbit(key, day - 1L))) {
-                    LocalDate d = monthStart.withDayOfMonth(day);
-                    result.add(d.format(DATE_FORMATTER));
-                }
+        List<Long> raw = redisTemplate.execute(
+                (org.springframework.data.redis.core.RedisCallback<List<Long>>) connection ->
+                        connection.stringCommands().bitField(key.getBytes(), subCommands));
+        if (raw == null || raw.isEmpty() || raw.get(0) == null) {
+            return result;
+        }
+        long bits = raw.get(0);
+        for (int day = 1; day <= daysInMonth; day++) {
+            if (((bits >> (day - 1)) & 1L) == 1L) {
+                LocalDate d = monthStart.withDayOfMonth(day);
+                result.add(d.format(DATE_FORMATTER));
             }
         }
         return result;
@@ -87,22 +96,20 @@ public class SignBitMapService {
     public int currentStreak(long userId, LocalDate today) {
         LocalDate cursor = today;
         int streak = 0;
-        try (Jedis jedis = jedisPool.getResource()) {
-            while (true) {
-                String key = key(cursor);
-                long offset = cursor.getDayOfMonth() - 1L;
-                boolean signed = jedis.getbit(key, offset);
-                if (!signed) {
-                    // 允许昨日之前才断签；如果是当天首次签到场景，调用方需自行判断
-                    if (cursor.isEqual(today)) {
-                        cursor = cursor.minusDays(1);
-                        continue;
-                    }
-                    break;
+        // 一次最多回看 31 天，循环 BITGET BITCOUNT 无法跨月聚合，故逐月 BITCOUNT + GETBIT
+        while (true) {
+            String key = KEY_PREFIX + userId + ":" + cursor.format(YM_FORMATTER);
+            long offset = cursor.getDayOfMonth() - 1L;
+            Boolean signed = redisTemplate.opsForValue().getBit(key, offset);
+            if (!Boolean.TRUE.equals(signed)) {
+                if (cursor.isEqual(today)) {
+                    cursor = cursor.minusDays(1);
+                    continue;
                 }
-                streak++;
-                cursor = cursor.minusDays(1);
+                break;
             }
+            streak++;
+            cursor = cursor.minusDays(1);
         }
         return streak;
     }
@@ -112,17 +119,14 @@ public class SignBitMapService {
      */
     public long countInMonth(long userId, String yearMonth) {
         String key = KEY_PREFIX + userId + ":" + yearMonth;
-        try (Jedis jedis = jedisPool.getResource()) {
-            return jedis.bitcount(key);
-        }
+        Long count = redisTemplate.execute(
+                (org.springframework.data.redis.core.RedisCallback<Long>) connection ->
+                        connection.stringCommands().bitCount(key.getBytes()));
+        return count == null ? 0L : count;
     }
 
     private String key(long userId, LocalDate date) {
         return KEY_PREFIX + userId + ":" + date.format(YM_FORMATTER);
-    }
-
-    private String key(LocalDate date) {
-        return date.format(YM_FORMATTER);
     }
 
     // 预留工具方法（BitOP 多 Key 聚合）
@@ -132,9 +136,21 @@ public class SignBitMapService {
         for (int i = 0; i < yearMonths.length; i++) {
             keys[i] = KEY_PREFIX + userId + ":" + yearMonths[i];
         }
-        try (Jedis jedis = jedisPool.getResource()) {
-            return jedis.bitop(BitOP.AND, "tmp_" + userId, keys);
+        String destKey = "tmp_" + userId;
+        Long len = redisTemplate.execute(
+                (org.springframework.data.redis.core.RedisCallback<Long>) connection ->
+                        connection.stringCommands().bitOp(BitOperation.AND,
+                                destKey.getBytes(),
+                                keysToBytes(keys)));
+        return len == null ? 0L : len;
+    }
+
+    private byte[][] keysToBytes(String[] keys) {
+        byte[][] arr = new byte[keys.length][];
+        for (int i = 0; i < keys.length; i++) {
+            arr[i] = keys[i].getBytes();
         }
+        return arr;
     }
 
     static {

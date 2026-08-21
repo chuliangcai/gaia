@@ -15,6 +15,20 @@ spring:
     hikari:
       maximum-pool-size: 20
       minimum-idle: 4
+  data:
+    redis:
+      # Spring Data Redis（Lettuce 驱动，由 RedisTracingConfig 启用 Micrometer Tracing）
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+      timeout: 2000ms
+      lettuce:
+        pool:
+          enabled: true
+          max-active: 64
+          max-idle: 16
+          min-idle: 4
   sql:
     init:
       # 启动时自动执行 classpath:db/schema.sql（幂等：CREATE TABLE IF NOT EXISTS）
@@ -24,6 +38,10 @@ spring:
       continue-on-error: false
   main:
     allow-bean-definition-overriding: true
+  # 关闭 Spring Boot 自带的 ZipkinAutoConfiguration，由 dubbo-spring-boot-tracing-brave-zipkin-starter 统一接管
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.actuate.autoconfigure.tracing.zipkin.ZipkinAutoConfiguration
 
 # ===================== Dubbo =====================
 dubbo:
@@ -41,6 +59,13 @@ dubbo:
     version: 1.0.0
   cloud:
     enabled: false
+  # 全链路追踪（Brave/Zipkin，由 dubbo-spring-boot-tracing-brave-zipkin-starter 装配）
+  tracing:
+    enabled: true
+    # propagation 是 PropagationConfig 嵌套类型，Dubbo 3.2.x 默认即 B3，不再在 YAML 配置
+    tracing-exporter:
+      zipkin-config:
+        endpoint: ${ZIPKIN_ENDPOINT:http://127.0.0.1:9411/api/v2/spans}
 
 # ===================== MyBatis-Plus =====================
 mybatis-plus:
@@ -54,17 +79,7 @@ mybatis-plus:
       logic-delete-value: 1
 
 # ===================== Redis =====================
-gaia:
-  redis:
-    host: ${REDIS_HOST:127.0.0.1}
-    port: ${REDIS_PORT:6379}
-    password: ${REDIS_PASSWORD:}
-    database: 0
-    timeout: 2000
-    pool:
-      max-total: 64
-      max-idle: 16
-      min-idle: 4
+# Redis 配置已迁移到 spring.data.redis.*（Lettuce 驱动）
 
 # ===================== 监控 =====================
 management:
@@ -80,6 +95,10 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+  # 采样率（1.0 全采样；按需调整为 0.1 / 0.01）
+  tracing:
+    sampling:
+      probability: ${ZIPKIN_SAMPLING_RATE:1.0}
 
 logging:
   level:
@@ -87,5 +106,5 @@ logging:
     com.gaia: INFO
     org.apache.dubbo: WARN
   pattern:
-    # SkyWalking 9.x/10.x agent 自动把 traceId 写入 MDC key=traceId；未接入时显示 "-"
-    console: "%d{HH:mm:ss.SSS} [%thread] [tid=%X{traceId:-}] %-5level %logger{36} - %msg%n"
+    # Brave 的 Slf4jCurrentTraceContext 自动把 traceId/spanId 写入 MDC；未接入时显示 "-"
+    console: "%d{HH:mm:ss.SSS} [%thread] [traceId=%X{traceId:-} spanId=%X{spanId:-}] %-5level %logger{36} - %msg%n"

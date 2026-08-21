@@ -35,10 +35,11 @@
         <dubbo-triple.version>3.2.9</dubbo-triple.version>
         <mybatis-plus.version>3.5.7</mybatis-plus.version>
         <mysql.version>8.0.33</mysql.version>
-        <jedis.version>5.1.2</jedis.version>
         <micrometer.version>1.12.5</micrometer.version>
         <lombok.version>1.18.32</lombok.version>
-        <skywalking.version>9.0.0</skywalking.version>
+        <!-- Zipkin / Brave 版本：跟随 Spring Boot 3.2.5 的 BOM -->
+        <brave.version>5.16.0</brave.version>
+        <micrometer-tracing.version>1.2.5</micrometer-tracing.version>
     </properties>
 
     <dependencyManagement>
@@ -82,12 +83,7 @@
                 <version>${mysql.version}</version>
             </dependency>
 
-            <!-- Jedis -->
-            <dependency>
-                <groupId>redis.clients</groupId>
-                <artifactId>jedis</artifactId>
-                <version>${jedis.version}</version>
-            </dependency>
+            <!-- Spring Data Redis / Lettuce 版本由 Spring Boot BOM 管理，无需显式声明 -->
 
             <!-- Micrometer Prometheus -->
             <dependency>
@@ -95,12 +91,24 @@
                 <artifactId>micrometer-registry-prometheus</artifactId>
                 <version>${micrometer.version}</version>
             </dependency>
-
-            <!-- SkyWalking Logback 适配：让 %tid 在 MDC 中可读 -->
+            <!-- Micrometer Tracing → Brave 桥：让 Spring Boot Observation 自动产出 Brave span -->
             <dependency>
-                <groupId>org.apache.skywalking</groupId>
-                <artifactId>apm-toolkit-logback-1.x</artifactId>
-                <version>${skywalking.version}</version>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-tracing-bridge-brave</artifactId>
+                <version>${micrometer-tracing.version}</version>
+            </dependency>
+
+            <!-- Zipkin / Brave 全链路追踪 -->
+            <dependency>
+                <groupId>io.zipkin.brave</groupId>
+                <artifactId>brave-context-slf4j</artifactId>
+                <version>${brave.version}</version>
+            </dependency>
+            <!-- Dubbo 官方 Brave/Zipkin 集成：装配 Brave Tracer + Zipkin reporter + Dubbo TracingFilter -->
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-spring-boot-tracing-brave-zipkin-starter</artifactId>
+                <version>${dubbo.version}</version>
             </dependency>
 
             <!-- Lombok -->
@@ -171,6 +179,9 @@
       用法:
         mvn spring-boot:run -pl gaia-server -am -P dev-server
         mvn spring-boot:run -pl gaia-gateway -am -P dev-gateway
+      全链路追踪：Zipkin / Brave（不再依赖 javaagent）
+        - zipkin.endpoint 通过 -DZIPKIN_ENDPOINT=... 注入（application.yml 中以 ${ZIPKIN_ENDPOINT} 占位）
+        - 采样率由 management.tracing.sampling.probability 配置（默认 1.0）
     -->
     <profiles>
         <!-- 公共：仅含 add-opens（避免 JDK 17 反射限制），其它属性可被子 profile 覆盖 -->
@@ -187,12 +198,10 @@
             <properties>
                 <spring-boot.run.mainClass>com.gaia.server.GaiaServerApplication</spring-boot.run.mainClass>
                 <spring.profiles.active>dev</spring.profiles.active>
-                <skywalking.agent.name>gaia-server</skywalking.agent.name>
-                <skywalking.agent.path>/Users/apple001/data/docker-compose/skywalking-agent/skywalking-agent.jar</skywalking.agent.path>
-                <skywalking.agent.collector>127.0.0.1:11800</skywalking.agent.collector>
+                <zipkin.endpoint>http://127.0.0.1:9411/api/v2/spans</zipkin.endpoint>
                 <dubbo.registry.register>false</dubbo.registry.register>
                 <jvm.add-opens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED</jvm.add-opens>
-                <spring-boot.jvmArguments>${jvm.add-opens} -javaagent:${skywalking.agent.path} -DSW_AGENT_NAME=${skywalking.agent.name} -DSW_AGENT_COLLECTOR=${skywalking.agent.collector} -Dspring.profiles.active=${spring.profiles.active} -Ddubbo.registry.register=${dubbo.registry.register} -DMYSQL_PASSWORD=12345</spring-boot.jvmArguments>
+                <spring-boot.jvmArguments>${jvm.add-opens} -Dspring.profiles.active=${spring.profiles.active} -Ddubbo.registry.register=${dubbo.registry.register} -DZIPKIN_ENDPOINT=${zipkin.endpoint} -DMYSQL_PASSWORD=12345</spring-boot.jvmArguments>
             </properties>
         </profile>
 
@@ -202,11 +211,9 @@
             <properties>
                 <spring-boot.run.mainClass>com.gaia.gateway.GaiaGatewayApplication</spring-boot.run.mainClass>
                 <spring.profiles.active>dev</spring.profiles.active>
-                <skywalking.agent.name>gaia-gateway</skywalking.agent.name>
-                <skywalking.agent.path>/Users/apple001/data/docker-compose/skywalking-agent/skywalking-agent.jar</skywalking.agent.path>
-                <skywalking.agent.collector>127.0.0.1:11800</skywalking.agent.collector>
+                <zipkin.endpoint>http://127.0.0.1:9411/api/v2/spans</zipkin.endpoint>
                 <jvm.add-opens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED</jvm.add-opens>
-                <spring-boot.jvmArguments>${jvm.add-opens} -javaagent:${skywalking.agent.path} -DSW_AGENT_NAME=${skywalking.agent.name} -DSW_AGENT_COLLECTOR=${skywalking.agent.collector} -Dspring.profiles.active=${spring.profiles.active}</spring-boot.jvmArguments>
+                <spring-boot.jvmArguments>${jvm.add-opens} -Dspring.profiles.active=${spring.profiles.active} -DZIPKIN_ENDPOINT=${zipkin.endpoint}</spring-boot.jvmArguments>
             </properties>
         </profile>
     </profiles>
