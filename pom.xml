@@ -38,6 +38,7 @@
         <jedis.version>5.1.2</jedis.version>
         <micrometer.version>1.12.5</micrometer.version>
         <lombok.version>1.18.32</lombok.version>
+        <skywalking.version>9.0.0</skywalking.version>
     </properties>
 
     <dependencyManagement>
@@ -93,6 +94,13 @@
                 <groupId>io.micrometer</groupId>
                 <artifactId>micrometer-registry-prometheus</artifactId>
                 <version>${micrometer.version}</version>
+            </dependency>
+
+            <!-- SkyWalking Logback 适配：让 %tid 在 MDC 中可读 -->
+            <dependency>
+                <groupId>org.apache.skywalking</groupId>
+                <artifactId>apm-toolkit-logback-1.x</artifactId>
+                <version>${skywalking.version}</version>
             </dependency>
 
             <!-- Lombok -->

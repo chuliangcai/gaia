@@ -80,5 +80,5 @@ logging:
     com.gaia: INFO
     org.apache.dubbo: WARN
   pattern:
-    # SkyWalking 9.x/10.x agent 自动把 traceId 写入 MDC key=tid；未接入时显示 "-"
-    console: "%d{HH:mm:ss.SSS} [%thread] [tid=%X{tid:-}] %-5level %logger{36} - %msg%n"
+    # SkyWalking 9.x/10.x agent 自动把 traceId 写入 MDC key=traceId；未接入时显示 "-"
+    console: "%d{HH:mm:ss.SSS} [%thread] [tid=%X{traceId:-}] %-5level %logger{36} - %msg%n"

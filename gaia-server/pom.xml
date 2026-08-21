@@ -50,6 +50,12 @@
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
 
+        <!-- SkyWalking logback 适配：使 %tid 可在 pattern 中输出 -->
+        <dependency>
+            <groupId>org.apache.skywalking</groupId>
+            <artifactId>apm-toolkit-logback-1.x</artifactId>
+        </dependency>
+
         <!-- MyBatis-Plus + MySQL -->
         <dependency>
             <groupId>com.baomidou</groupId>

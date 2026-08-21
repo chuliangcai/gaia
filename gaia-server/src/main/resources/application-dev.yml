@@ -10,4 +10,4 @@ logging:
     com.gaia: DEBUG
     org.apache.dubbo: INFO
   pattern:
-    console: "%d{HH:mm:ss.SSS} [%thread] [tid=%X{tid:-}] %-5level %logger{36} - %msg%n"
+    console: "%d{HH:mm:ss.SSS} [%thread] [tid=%X{traceId:-}] %-5level %logger{36} - %msg%n"

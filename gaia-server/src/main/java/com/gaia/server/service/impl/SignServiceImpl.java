@@ -50,63 +50,87 @@ public class SignServiceImpl implements SignService {
 
     @Override
     public SignResultDTO sign(Long userId) {
+        log.info("签到请求入口 userId={}", userId);
         if (userId == null || userId <= 0) {
+            log.warn("签到参数非法 userId={}", userId);
             throw new IllegalArgumentException("userId 不能为空");
         }
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Shanghai"));
         String dateStr = today.toString();
         String lockKey = "gaia:sign:lock:" + userId + ":" + dateStr;
         String token = UUID.randomUUID().toString();
+        long start = System.currentTimeMillis();
 
         boolean acquired = redisLock.tryLock(lockKey, token, LOCK_EXPIRE_MS);
         if (!acquired) {
+            log.info("签到命中防重入 userId={}, date={}, lockKey={}", userId, dateStr, lockKey);
             // 命中防重入
             return new SignResultDTO(false, 0, 0L, dateStr);
         }
+        log.debug("签到分布式锁获取成功 userId={}, lockKey={}, token={}", userId, lockKey, token);
         try {
             // 1. BitMap 抢占（CAS 语义）
             boolean firstTime = bitMapService.setSigned(userId, today);
             if (!firstTime) {
                 // 当日已签到，读取累计天数返回
                 int streak = bitMapService.currentStreak(userId, today);
+                log.info("签到重复请求 userId={}, date={}, streak={}", userId, dateStr, streak);
                 return new SignResultDTO(false, streak, 0L, dateStr);
             }
+            log.info("签到 BitMap 抢占成功 userId={}, date={}", userId, dateStr);
 
             // 2. 计算连续天数与奖励
             int streak = bitMapService.currentStreak(userId, today);
             long reward = rewardRule.calculate(streak);
+            log.info("签到奖励计算完成 userId={}, date={}, streak={}, reward={}", userId, dateStr, streak, reward);
 
             // 3. 持久化对账（异步可优化为 MQ，本次同步落库简化）
             persistRecord(userId, today, streak, reward);
 
+            log.info("签到成功 userId={}, date={}, streak={}, reward={}, cost={}ms",
+                    userId, dateStr, streak, reward, System.currentTimeMillis() - start);
             return new SignResultDTO(true, streak, reward, dateStr);
+        } catch (Exception e) {
+            log.error("签到异常 userId={}, date={}, cost={}ms",
+                    userId, dateStr, System.currentTimeMillis() - start, e);
+            throw e;
         } finally {
             redisLock.release(lockKey, token);
+            log.debug("签到分布式锁释放 userId={}, lockKey={}, token={}", userId, lockKey, token);
         }
     }
 
     @Override
     public SignCalendarDTO calendar(Long userId, String yearMonth) {
+        log.info("查询签到日历入口 userId={}, yearMonth={}", userId, yearMonth);
         if (userId == null || userId <= 0) {
+            log.warn("签到日历参数非法 userId={}", userId);
             throw new IllegalArgumentException("userId 不能为空");
         }
         if (yearMonth == null || yearMonth.length() != 6) {
+            log.warn("签到日历参数非法 yearMonth={}", yearMonth);
             throw new IllegalArgumentException("yearMonth 必须为 yyyyMM");
         }
         List<String> dates = bitMapService.signedDates(userId, yearMonth);
         LocalDate monthStart = LocalDate.parse(yearMonth + "01",
                 java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd"));
+        int size = dates == null ? 0 : dates.size();
+        log.info("查询签到日历完成 userId={}, yearMonth={}, signedCount={}", userId, yearMonth, size);
         return new SignCalendarDTO(yearMonth, dates == null ? new ArrayList<>() : dates,
                 monthStart.lengthOfMonth());
     }
 
     @Override
     public Integer streak(Long userId) {
+        log.info("查询连续签到天数入口 userId={}", userId);
         if (userId == null || userId <= 0) {
+            log.warn("连续签到参数非法 userId={}", userId);
             throw new IllegalArgumentException("userId 不能为空");
         }
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Shanghai"));
-        return bitMapService.currentStreak(userId, today);
+        int streak = bitMapService.currentStreak(userId, today);
+        log.info("查询连续签到天数完成 userId={}, streak={}", userId, streak);
+        return streak;
     }
 
     /**
