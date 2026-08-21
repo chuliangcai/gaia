@@ -17,7 +17,7 @@ spring:
       minimum-idle: 4
   data:
     redis:
-      # Spring Data Redis（Lettuce 驱动，由 RedisTracingConfig 启用 Micrometer Tracing）
+      # Spring Data Redis（Lettuce 驱动；Spring Boot 3.2 默认自动接入 Micrometer Tracing）
       host: ${REDIS_HOST:127.0.0.1}
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
@@ -99,6 +99,15 @@ management:
   tracing:
     sampling:
       probability: ${ZIPKIN_SAMPLING_RATE:1.0}
+  observations:
+    annotations:
+      enabled: true
+    enable:
+      # datasource-micrometer-spring-boot：把每条 SQL 包装为 Observation →
+      # 经 micrometer-tracing-bridge-brave 转成 Brave span，Zipkin UI 中可见。
+      db.sql.observations: true
+      # 连接获取也建 span（连接池等待耗时可观时建议开启）
+      db.connection.observations: true
 
 logging:
   level:

@@ -60,6 +60,14 @@
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-tracing-bridge-brave</artifactId>
         </dependency>
+        <!--
+          JDBC Observation：自动为 JDBC 连接获取 / SQL 执行产出 Observation，
+          经 micrometer-tracing-bridge-brave 桥接为 Brave span（替换自研 MybatisSqlObservationInterceptor）。
+        -->
+        <dependency>
+            <groupId>net.ttddyy.observation</groupId>
+            <artifactId>datasource-micrometer-spring-boot</artifactId>
+        </dependency>
         <!-- Dubbo 官方 Brave/Zipkin 集成：装配 Brave Tracer + Zipkin reporter + Dubbo TracingFilter -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>

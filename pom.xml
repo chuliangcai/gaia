@@ -31,15 +31,13 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+        <!-- Dubbo 3.2.9：与 SB 3.2.5 配套；Dubbo 3.3+ 与 SB 3.5 兼容性边界未达成本工程预期，保留 3.2.9 -->
         <dubbo.version>3.2.9</dubbo.version>
         <dubbo-triple.version>3.2.9</dubbo-triple.version>
+        <!-- MyBatis-Plus 3.5.7：与 SB 3.2.5 配套 -->
         <mybatis-plus.version>3.5.7</mybatis-plus.version>
         <mysql.version>8.0.33</mysql.version>
-        <micrometer.version>1.12.5</micrometer.version>
         <lombok.version>1.18.32</lombok.version>
-        <!-- Zipkin / Brave 版本：跟随 Spring Boot 3.2.5 的 BOM -->
-        <brave.version>5.16.0</brave.version>
-        <micrometer-tracing.version>1.2.5</micrometer-tracing.version>
     </properties>
 
     <dependencyManagement>
@@ -85,30 +83,30 @@
 
             <!-- Spring Data Redis / Lettuce 版本由 Spring Boot BOM 管理，无需显式声明 -->
 
-            <!-- Micrometer Prometheus -->
-            <dependency>
-                <groupId>io.micrometer</groupId>
-                <artifactId>micrometer-registry-prometheus</artifactId>
-                <version>${micrometer.version}</version>
-            </dependency>
-            <!-- Micrometer Tracing → Brave 桥：让 Spring Boot Observation 自动产出 Brave span -->
-            <dependency>
-                <groupId>io.micrometer</groupId>
-                <artifactId>micrometer-tracing-bridge-brave</artifactId>
-                <version>${micrometer-tracing.version}</version>
-            </dependency>
+            <!--
+              Micrometer / Brave / Tracing 等版本由 spring-boot-starter-parent → spring-boot-dependencies BOM
+              统一管理，子模块直接无版本依赖即可。
+              （不要在本 dependencyManagement 重复声明这些条目，否则会覆盖 BOM 的版本解析，导致 'version is missing'。）
+            -->
 
-            <!-- Zipkin / Brave 全链路追踪 -->
-            <dependency>
-                <groupId>io.zipkin.brave</groupId>
-                <artifactId>brave-context-slf4j</artifactId>
-                <version>${brave.version}</version>
-            </dependency>
             <!-- Dubbo 官方 Brave/Zipkin 集成：装配 Brave Tracer + Zipkin reporter + Dubbo TracingFilter -->
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-spring-boot-tracing-brave-zipkin-starter</artifactId>
                 <version>${dubbo.version}</version>
+            </dependency>
+
+            <!--
+              Datasource Micrometer（JDBC Observation 替代品）：
+              Spring Boot 3.5+ 可直接通过该 starter 为 JDBC 连接获取 / SQL 执行
+              产出 Observation，并由 micrometer-tracing-bridge-brave 桥接为 Brave span，
+              替换自研 MybatisSqlObservationInterceptor。
+              该依赖不在 Spring Boot BOM 中，需要显式声明版本。
+            -->
+            <dependency>
+                <groupId>net.ttddyy.observation</groupId>
+                <artifactId>datasource-micrometer-spring-boot</artifactId>
+                <version>1.0.6</version>
             </dependency>
 
             <!-- Lombok -->
