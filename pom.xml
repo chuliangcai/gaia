@@ -138,7 +138,68 @@
                         <encoding>UTF-8</encoding>
                     </configuration>
                 </plugin>
+                <!--
+                  spring-boot-maven-plugin 在父 pom（packaging=pom）上默认会执行并找不到
+                  main class。在 pluginManagement 里配置 <skip>true</skip>，让父模块
+                  执行 spring-boot:run 时直接跳过；同时子模块在自身 <build> 中显式声明
+                  并用 <skip>false</skip> 覆盖即可启动。
+                -->
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
+
+    <!--
+      Maven profiles: 通过 -P<id> 激活，把 mainClass / jvmArguments 等
+      作为 Maven 属性注入；子模块 pom 通过 ${spring-boot.run.mainClass} 与
+      ${spring-boot.jvmArguments} 占位符引用，从而让 spring-boot-maven-plugin
+      在子模块上正确启动。
+      用法:
+        mvn spring-boot:run -pl gaia-server -am -P dev-server
+        mvn spring-boot:run -pl gaia-gateway -am -P dev-gateway
+    -->
+    <profiles>
+        <!-- 公共：仅含 add-opens（避免 JDK 17 反射限制），其它属性可被子 profile 覆盖 -->
+        <profile>
+            <id>dev-base</id>
+            <properties>
+                <jvm.add-opens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED</jvm.add-opens>
+            </properties>
+        </profile>
+
+        <!-- gaia-server: dev 参数 + 关闭 Dubbo 注册推送 -->
+        <profile>
+            <id>dev-server</id>
+            <properties>
+                <spring-boot.run.mainClass>com.gaia.server.GaiaServerApplication</spring-boot.run.mainClass>
+                <spring.profiles.active>dev</spring.profiles.active>
+                <skywalking.agent.name>gaia-server</skywalking.agent.name>
+                <skywalking.agent.path>/Users/apple001/data/docker-compose/skywalking-agent/skywalking-agent.jar</skywalking.agent.path>
+                <skywalking.agent.collector>127.0.0.1:11800</skywalking.agent.collector>
+                <dubbo.registry.register>false</dubbo.registry.register>
+                <jvm.add-opens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED</jvm.add-opens>
+                <spring-boot.jvmArguments>${jvm.add-opens} -javaagent:${skywalking.agent.path} -DSW_AGENT_NAME=${skywalking.agent.name} -DSW_AGENT_COLLECTOR=${skywalking.agent.collector} -Dspring.profiles.active=${spring.profiles.active} -Ddubbo.registry.register=${dubbo.registry.register} -DMYSQL_PASSWORD=12345</spring-boot.jvmArguments>
+            </properties>
+        </profile>
+
+        <!-- gaia-gateway: dev 参数 -->
+        <profile>
+            <id>dev-gateway</id>
+            <properties>
+                <spring-boot.run.mainClass>com.gaia.gateway.GaiaGatewayApplication</spring-boot.run.mainClass>
+                <spring.profiles.active>dev</spring.profiles.active>
+                <skywalking.agent.name>gaia-gateway</skywalking.agent.name>
+                <skywalking.agent.path>/Users/apple001/data/docker-compose/skywalking-agent/skywalking-agent.jar</skywalking.agent.path>
+                <skywalking.agent.collector>127.0.0.1:11800</skywalking.agent.collector>
+                <jvm.add-opens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED</jvm.add-opens>
+                <spring-boot.jvmArguments>${jvm.add-opens} -javaagent:${skywalking.agent.path} -DSW_AGENT_NAME=${skywalking.agent.name} -DSW_AGENT_COLLECTOR=${skywalking.agent.collector} -Dspring.profiles.active=${spring.profiles.active}</spring-boot.jvmArguments>
+            </properties>
+        </profile>
+    </profiles>
 </project>

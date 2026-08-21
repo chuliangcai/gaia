@@ -67,7 +67,16 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <jvmArguments>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED</jvmArguments>
+                    <!-- 覆盖父 pom pluginManagement 中的 skip=true -->
+                    <skip>false</skip>
+                    <!--
+                      默认 jvmArguments 仅含 add-opens（避免 JDK 17 反射限制）。
+                      完整启动参数（skywalking agent / profile 等）
+                      由根 pom 的 dev-gateway profile 注入：
+                        mvn spring-boot:run -P dev-gateway
+                    -->
+                    <mainClass>${spring-boot.run.mainClass}</mainClass>
+                    <jvmArguments>${spring-boot.jvmArguments}</jvmArguments>
                 </configuration>
             </plugin>
         </plugins>
