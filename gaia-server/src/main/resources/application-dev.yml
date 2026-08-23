@@ -1,14 +1,9 @@
-# 开发环境：仅调整日志级别。
-# Dubbo Provider 通过启动参数 -Ddubbo.registry.register=false 跳过 K8s 注册中心推送
-# （避免 dev profile 改写 dubbo.registry.* 段导致 application/protocol 被覆盖）
-
-server:
-  port: 8081
+# =========================================================
+# dev profile：本地开发，Dubbo 不注册 / 不订阅（双 -Ddubbo.registry.register=false 跳过）
+# Dubbo 配置由 application.yml 提供，dev profile 仅覆盖日志级别
+# =========================================================
 
 logging:
   level:
     com.gaia: DEBUG
     org.apache.dubbo: INFO
-  pattern:
-    # Brave 把 traceId/spanId 写入 MDC（Slf4jCurrentTraceContext）
-    console: "%d{HH:mm:ss.SSS} [%thread] [traceId=%X{traceId:-} spanId=%X{spanId:-}] %-5level %logger{36} - %msg%n"

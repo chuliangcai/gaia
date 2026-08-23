@@ -1,3 +1,10 @@
+# =========================================================
+# Gaia Gateway 公共配置（被 dev / test / prod 等 profile 共用）
+# profile 切换通过环境变量 SPRING_PROFILES_ACTIVE；
+#   - dev  : 本地直连（绕过注册中心）
+#   - test : K8s 注册中心（kind / staging / 生产）
+# =========================================================
+
 server:
   port: 8080
   servlet:
@@ -7,7 +14,7 @@ spring:
   application:
     name: gaia-gateway
   profiles:
-    # 默认走 test（K8s 注册中心），开发时通过 -Dspring.profiles.active=dev 切换
+    # 默认 test；本地开发通过 -Dspring.profiles.active=dev 切到直连
     active: ${SPRING_PROFILES_ACTIVE:test}
   main:
     allow-bean-definition-overriding: true
@@ -16,51 +23,15 @@ spring:
     exclude:
       - org.springframework.boot.actuate.autoconfigure.tracing.zipkin.ZipkinAutoConfiguration
 
-# ===================== Dubbo 配置（默认/测试：K8s 注册中心） =====================
-dubbo:
-  application:
-    name: gaia-gateway
-    qos-enable: false
-  registry:
-    address: kubernetes://kubernetes.default.svc.cluster.local:443
-    parameter:
-      namespace: gaia
-  protocol:
-    name: tri
-    port: -1
-  consumer:
-    check: false
-    timeout: 3000
-    retries: 0
-  cloud:
-    enabled: false
-  # 全链路追踪（Brave/Zipkin，由 dubbo-spring-boot-tracing-brave-zipkin-starter 装配）
-  tracing:
-    enabled: true
-    # propagation 是 PropagationConfig 嵌套类型，Dubbo 3.2.x 默认即 B3，不再在 YAML 配置
-    tracing-exporter:
-      zipkin-config:
-        endpoint: ${ZIPKIN_ENDPOINT:http://127.0.0.1:9411/api/v2/spans}
-
-# ===================== 业务服务直连地址（仅 dev profile 使用） =====================
-gaia:
-  dubbo:
-    sign:
-      # 默认占位；dev profile 会覆盖
-      url: ${SIGN_DUBBO_URL:}
-
 # ===================== Springdoc OpenAPI =====================
 springdoc:
   api-docs:
-    # 默认 /v3/api-docs，保持默认
     enabled: true
   swagger-ui:
-    # 默认 /swagger-ui.html
     enabled: true
     path: /swagger-ui.html
     operations-sorter: alpha
     tags-sorter: alpha
-  # 应用基本信息（也可在 Java 代码里通过 OpenAPI Bean 注入）
   info:
     title: Gaia Gateway API
     description: C 端互动平台统一 HTTP 网关，所有 Dubbo RPC 服务的 HTTP 入口
@@ -82,7 +53,6 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
-  # 采样率（1.0 全采样；按需调整为 0.1 / 0.01）
   tracing:
     sampling:
       probability: ${ZIPKIN_SAMPLING_RATE:1.0}

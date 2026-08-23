@@ -1,5 +1,5 @@
 # =========================================================
-# Gaia 服务进程 K8s 资源（Dubbo 服务自动注册到 K8s API）
+# Gaia 服务进程 K8s 资源（Dubbo 服务注册到 Zookeeper）
 # =========================================================
 apiVersion: v1
 kind: Service
@@ -7,7 +7,9 @@ metadata:
   name: gaia-server
   namespace: gaia
 spec:
-  type: ClusterIP
+  # Headless Service: DNS 解析返回 Pod IP 而非 ClusterIP VIP
+  # Dubbo Consumer 通过 ZK 拿到 Provider URL 后直连 Pod IP
+  clusterIP: None
   selector:
     app: gaia-server
   ports:
@@ -33,20 +35,52 @@ spec:
       labels:
         app: gaia-server
     spec:
-      serviceAccountName: gaia-dubbo
+      # kind 集群访问宿主机本地 MySQL/Redis/Zipkin：
+      # 在 /etc/hosts 静态注入 172.17.0.1 -> host.docker.internal
+      # 让 Pod 用 host.docker.internal 访问宿主 docker 进程暴露的服务
+      hostAliases:
+        - ip: "172.19.0.1"
+          hostnames:
+            - "host.docker.internal"
       containers:
         - name: gaia-server
-          image: registry.example.com/gaia/gaia-server:1.0.0          # 发布所有 Dubbo Provider（如 SignService）
+          # 本地 kind 部署：镜像通过 kind load docker-image gaia-server:1.0.0 加载
+          image: gaia-server:1.0.0
+          imagePullPolicy: Never
           ports:
             - containerPort: 20881
               name: tri
             - containerPort: 8081
               name: http
           env:
+            # K8s 部署走 test profile：Dubbo 注册中心 = Zookeeper
+            - name: SPRING_PROFILES_ACTIVE
+              value: test
+            # preferred protocol（官方字段名 protocol）
+            - name: DUBBO_APPLICATION_PROTOCOL
+              value: tri
             - name: MYSQL_HOST
-              value: gaia-mysql
+              # 通过 host.docker.internal 访问宿主机 docker run 的 MySQL
+              value: host.docker.internal
+            - name: MYSQL_PORT
+              value: "3306"
+            - name: MYSQL_DB
+              value: gaia
+            - name: MYSQL_USER
+              value: root
+            - name: MYSQL_PASSWORD
+              # 宿主机 mysql-service 容器 MYSQL_ROOT_PASSWORD
+              value: "12345"
             - name: REDIS_HOST
-              value: gaia-redis
+              value: host.docker.internal
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_PASSWORD
+              value: ""
+            - name: ZIPKIN_ENDPOINT
+              value: http://host.docker.internal:9411/api/v2/spans
+            - name: ZIPKIN_SAMPLING_RATE
+              value: "1.0"
           readinessProbe:
             httpGet:
               path: /actuator/health

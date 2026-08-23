@@ -1,0 +1,29 @@
+# =========================================================
+# test profile：K8s 集群部署（kind / staging / 生产）
+# Dubbo 注册中心 = Zookeeper（集群内 zookeeper:2181）
+# =========================================================
+
+# ===================== Dubbo（Zookeeper 注册中心，接口级发现） =====================
+dubbo:
+  application:
+    name: gaia-server
+    qos-enable: false
+    # preferred protocol（官方字段名 protocol）
+    # tri Provider 必须设置此字段，否则 Dubbo 默认按 dubbo 协议找不到 endpoint
+    protocol: tri
+  registry:
+    # ZK 注册中心：跨 namespace 用完整 DNS 同名解析
+    # 同 namespace 也可简写为 zookeeper:2181
+    address: zookeeper://zookeeper.zookeeper.svc.cluster.local:2181?timeout=10000
+  protocol:
+    name: tri
+    port: 20881
+  provider:
+    version: 1.0.0
+  cloud:
+    enabled: false
+  tracing:
+    enabled: true
+    tracing-exporter:
+      zipkin-config:
+        endpoint: ${ZIPKIN_ENDPOINT:http://zipkin.observability.svc.cluster.local:9411/api/v2/spans}

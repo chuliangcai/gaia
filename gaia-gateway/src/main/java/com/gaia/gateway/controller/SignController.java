@@ -27,8 +27,7 @@ public class SignController {
 
     @DubboReference(
             group = DubboConstants.GROUP,
-            version = DubboConstants.VERSION,
-            url = "${gaia.dubbo.sign.url}")
+            version = DubboConstants.VERSION)
     private SignService signService;
 
     /**

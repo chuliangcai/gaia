@@ -66,6 +66,22 @@
                 <artifactId>dubbo-kubernetes</artifactId>
                 <version>${dubbo.version}</version>
             </dependency>
+            <!-- Dubbo 与 ZK 通信的 Curator 客户端封装（dubbo-spring-boot-starter 不会传递依赖 curator） -->
+            <dependency>
+                <groupId>org.apache.curator</groupId>
+                <artifactId>curator-framework</artifactId>
+                <version>5.1.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.curator</groupId>
+                <artifactId>curator-recipes</artifactId>
+                <version>5.1.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.curator</groupId>
+                <artifactId>curator-x-discovery</artifactId>
+                <version>5.1.0</version>
+            </dependency>
 
             <!-- MyBatis-Plus -->
             <dependency>
