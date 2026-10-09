@@ -1,0 +1,128 @@
+/* ===== 中奖结果弹窗 ===== */
+.result-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: rm-fade 200ms ease-out both;
+}
+
+.result-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(34, 15, 28, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.result-modal__card {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  padding: 36px 24px 28px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, #fff 0%, #fff5f7 100%);
+  box-shadow:
+    0 24px 48px rgba(0, 0, 0, 0.18),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+  text-align: center;
+  animation: rm-pop 320ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  overflow: hidden;
+}
+
+.result-modal__card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--prize-color, #ff4d6d);
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+.result-modal__ribbon {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: var(--prize-color, #ff4d6d);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+.result-modal__title {
+  margin: 16px 0 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #5b1a2b;
+}
+
+.result-modal__prize {
+  margin: 16px 0 24px;
+  padding: 18px 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px dashed rgba(255, 77, 109, 0.35);
+}
+
+.result-modal__prize-name {
+  font-size: 14px;
+  color: #834;
+  margin-bottom: 6px;
+}
+
+.result-modal__prize-text {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--prize-color, #ff4d6d);
+  letter-spacing: 1px;
+}
+
+.result-modal__tip {
+  font-size: 12px;
+  color: #8a6573;
+  margin-bottom: 16px;
+}
+
+.result-modal__btn {
+  display: inline-block;
+  padding: 12px 32px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff4d6d 0%, #ff8fa3 100%);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  box-shadow: 0 8px 18px rgba(255, 77, 109, 0.4);
+  transition: transform 120ms ease;
+}
+
+.result-modal__btn:active {
+  transform: scale(0.96);
+}
+
+@keyframes rm-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rm-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
