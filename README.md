@@ -12,7 +12,7 @@
 | 缓存 / 锁     | Redis（Jedis：BitMap + SETNX）                 |
 | 数据库        | MySQL 8.0 + MyBatis-Plus 3.5.x              |
 | 监控         | Micrometer + Prometheus                     |
-| 全链路追踪      | OpenTelemetry 1.31 + Jaeger（OTLP/HTTP 4318） |
+| 全链路追踪      | OpenTelemetry 1.31 + OTLP（grafana/otel-lgtm / Jaeger 等 OTLP 后端，OTLP/HTTP 4318 / OTLP/gRPC 4317） |
 
 ## 工程结构
 
@@ -88,5 +88,5 @@ kubectl apply -f deploy/k8s/gateway-ingress.yaml
 
 - gaia-module-lottery 二期实现：限流、Redis 库存、概率算法、防刷。
 - 引入 Spring Authorization Server 统一鉴权。
-- 当前已用 OpenTelemetry + Jaeger 替换 Zipkin：端点 `http://jaeger:4318/v1/traces`（本地开发 `http://127.0.0.1:4318/v1/traces`），日志 MDC key 为 `trace_id` / `span_id`（区别于旧的 Brave `traceId` / `spanId`）。
+- 当前已用 OpenTelemetry + OTLP 替换 Zipkin：本地默认对接 grafana/otel-lgtm，端点 `http://127.0.0.1:4318/v1/traces`（Jaeger native OTLP/HTTP、K8s `http://jaeger:4318/v1/traces` 等兼容后端亦可）。日志 MDC key 为 `trace_id` / `span_id`（区别于旧的 Brave `traceId` / `spanId`）。
 - Dubbo 3.2 没有官方 OTLP starter，DUBBO RPC 链路依靠全局 W3C propagator 传播 trace context；后续评估接入 `opentelemetry-spring-boot-starter` 或 Dubbo OTel 社区模块。

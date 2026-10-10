@@ -3,7 +3,7 @@
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
     <!--
-      全链路追踪：OpenTelemetry + Jaeger
+      全链路追踪：OpenTelemetry + OTLP（对接 grafana/otel-lgtm / Jaeger 等 OTLP 后端）
       backend 暂未引入 opentelemetry-logback-mdc-1.0 依赖（按需添加），当前 pattern 留出
       trace_id / span_id 占位以与 gateway / server 输出对齐。
     -->

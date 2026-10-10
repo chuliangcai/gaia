@@ -65,10 +65,11 @@
         </dependency>
 
         <!--
-          全链路追踪：OpenTelemetry + Jaeger
+          全链路追踪：OpenTelemetry + OTLP
           - micrometer-tracing-bridge-otel：让 Spring Boot 内置 Observation API（HTTP 入口 / JDBC / Redis）
             产出的 span 通过 OTel 上报。
-          - opentelemetry-exporter-otlp：通过 OTLP/HTTP 把 trace 发到 Jaeger（默认 4318）。
+          - opentelemetry-exporter-otlp：通过 OTLP/HTTP 把 trace 发到 OTLP 后端
+            （本地默认 grafana/otel-lgtm 127.0.0.1:4318，Jaeger 等其他兼容后端亦可）。
           - opentelemetry-logback-mdc-1.0：把 trace_id / span_id 注入 logback MDC，替换原 brave-context-slf4j。
           Dubbo 3.2 没有官方 OTLP starter，移除原 brave-zipkin starter；
           RPC 上下文通过全局 W3C propagator 传播。

@@ -21,6 +21,30 @@
             <artifactId>gaia-domain</artifactId>
         </dependency>
 
+        <!-- 调用 server 端 Dubbo 服务 -->
+        <dependency>
+            <groupId>com.gaia</groupId>
+            <artifactId>gaia-api</artifactId>
+        </dependency>
+
+        <!-- Dubbo 消费端 -->
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-framework</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-recipes</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-x-discovery</artifactId>
+        </dependency>
+
         <!-- Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

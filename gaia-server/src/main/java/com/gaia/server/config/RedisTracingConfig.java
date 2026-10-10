@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Configuration;
  * 把 {@code MicrometerTracing} 注入到自动装配的 {@link io.lettuce.core.RedisClient}，
  * 这样每条 Redis 命令都会成为 Observation，并由
  * {@code micrometer-tracing-bridge-otel} 桥接为 OpenTelemetry span，
- * 在 Jaeger UI 中显示为 {@code redis.command.<command>} 节点。</p>
+ * 在 OTLP 后端（grafana/otel-lgtm / Jaeger UI 等）中显示为 {@code redis.command.<command>} 节点。</p>
  */
 @Slf4j
 @Configuration

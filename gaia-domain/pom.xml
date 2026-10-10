@@ -19,5 +19,12 @@
             <groupId>com.gaia</groupId>
             <artifactId>gaia-common</artifactId>
         </dependency>
+
+        <!-- 测试：JUnit 5 -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

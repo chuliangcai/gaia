@@ -43,7 +43,9 @@
         <lombok.version>1.18.32</lombok.version>
 
         <!--
-          全链路追踪：OpenTelemetry + Jaeger（OTLP/HTTP）。
+          全链路追踪：OpenTelemetry + OTLP（OTLP/HTTP，默认对接 grafana/otel-lgtm 4318）。
+          本地默认 backend：grafana/otel-lgtm latest（容器名 lgtm；宿主机端口 3001 / 4317 / 4318）。
+          Grafana 入口 http://127.0.0.1:3001；OTLP/HTTP 4318、OTLP/gRPC 4317。
           与 Spring Boot 3.2.5 配套：
             - micrometer-tracing 1.2.5
             - opentelemetry 1.31.0
@@ -54,7 +56,7 @@
         <opentelemetry.version>1.31.0</opentelemetry.version>
         <opentelemetry-instrumentation.version>2.1.0-alpha</opentelemetry-instrumentation.version>
 
-        <!-- OTLP 默认端点：Jaeger 原生 OTLP/HTTP，端口 4318；运行时由 OTEL_EXPORTER_OTLP_TRACES_ENDPOINT 覆盖 -->
+        <!-- OTLP 默认端点：OTLP/HTTP，端口 4318（grafana/otel-lgtm 与 Jaeger 均原生支持）；运行时由 OTEL_EXPORTER_OTLP_TRACES_ENDPOINT 覆盖 -->
         <otel.exporter.otlp.traces.endpoint>http://127.0.0.1:4318/v1/traces</otel.exporter.otlp.traces.endpoint>
     </properties>
 
@@ -124,8 +126,9 @@
             -->
 
             <!--
-              OpenTelemetry OTLP Exporter：默认将 trace span 发送至 Jaeger（原生支持 OTLP/HTTP，端口 4318）。
-              端点由 OTEL_EXPORTER_OTLP_TRACES_ENDPOINT 环境变量或 application.yml otlp.traces.endpoint 覆盖。
+              OpenTelemetry OTLP Exporter：默认将 trace span 发送至 OTLP 后端（grafana/otel-lgtm / Jaeger
+              等均原生支持 OTLP/HTTP，端口 4318）。端点由 OTEL_EXPORTER_OTLP_TRACES_ENDPOINT 环境变量
+              或 application.yml otlp.traces.endpoint 覆盖。
             -->
             <dependency>
                 <groupId>io.opentelemetry</groupId>
@@ -243,10 +246,11 @@
         mvn spring-boot:run -pl gaia-server -am -P dev-server
         mvn spring-boot:run -pl gaia-gateway -am -P dev-gateway
         mvn spring-boot:run -pl gaia-backend -am -P dev-backend
-      全链路追踪：OpenTelemetry + Jaeger（OTLP/HTTP，不再依赖 javaagent）
+      全链路追踪：OpenTelemetry + OTLP/HTTP（对接 grafana/otel-lgtm / Jaeger 等，不再依赖 javaagent）
         - 端点通过 -DOTEL_EXPORTER_OTLP_TRACES_ENDPOINT=... 注入
           （application.yml 中以 ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:...} 占位）
-        - 默认指向 Jaeger（http://jaeger:4318/v1/traces 或本地 127.0.0.1:4318）
+        - 本地默认指向 grafana/otel-lgtm 的 OTLP 端点 http://127.0.0.1:4318/v1/traces
+          （也兼容 Jaeger native OTLP/HTTP；如需切换 gRPC，把端点改为 http://127.0.0.1:4317）
         - 采样率由 management.tracing.sampling.probability 配置（默认 1.0）
     -->
     <profiles>

@@ -3,6 +3,7 @@ package com.gaia.server;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @SpringBootApplication(scanBasePackages = {"com.gaia.server", "com.gaia.common", "com.gaia.api"})
 @EnableDubbo
 @EnableTransactionManagement
+@EnableScheduling
 public class GaiaServerApplication {
 
     public static void main(String[] args) {
