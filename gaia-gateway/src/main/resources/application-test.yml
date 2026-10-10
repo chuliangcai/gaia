@@ -23,10 +23,6 @@ dubbo:
     retries: 0
   cloud:
     enabled: false
-  tracing:
-    enabled: true
-    tracing-exporter:
-      zipkin-config:
-        endpoint: ${ZIPKIN_ENDPOINT:http://zipkin.observability.svc.cluster.local:9411/api/v2/spans}
+  # Dubbo 内部 tracing filter 关闭；RPC 上下文依靠 W3C propagator 在全局 OTel 中传播。
 
 # test profile 走 ZK 注册中心发现，不再用 @DubboReference url 直连

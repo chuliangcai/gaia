@@ -1,0 +1,56 @@
+# =========================================================
+# Gaia Backend（后台管理）公共配置
+# profile 切换通过环境变量 SPRING_PROFILES_ACTIVE；
+#   - dev  : 本地开发
+#   - test : K8s / 测试环境
+# =========================================================
+
+server:
+  port: 8088
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: gaia-backend
+  profiles:
+    # 默认 test；本地开发通过 -Dspring.profiles.active=dev 切换
+    active: ${SPRING_PROFILES_ACTIVE:test}
+
+# ===================== Springdoc OpenAPI =====================
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: alpha
+    tags-sorter: alpha
+  info:
+    title: Gaia Backend Admin API
+    description: Gaia 后台管理 HTTP 入口，对接 C 端互动平台数据
+    version: 1.0.0
+    contact:
+      name: Gaia Team
+
+# ===================== 监控 =====================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: when_authorized
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    root: INFO
+    com.gaia: INFO
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] [trace_id=%X{trace_id:-} span_id=%X{span_id:-}] %-5level %logger{36} - %msg%n"

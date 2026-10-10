@@ -4,14 +4,15 @@
 
 ## 技术栈
 
-| 类别         | 选型                                  |
-| ---------- | ----------------------------------- |
-| JDK / 框架   | JDK 17 / Spring Boot 3.2.x          |
-| RPC        | Apache Dubbo 3.3.x（Triple / HTTP/2） |
-| 注册中心       | Kubernetes API（`kubernetes://`）     |
-| 缓存 / 锁     | Redis（Jedis：BitMap + SETNX）        |
-| 数据库        | MySQL 8.0 + MyBatis-Plus 3.5.x       |
-| 监控         | Micrometer + Prometheus             |
+| 类别         | 选型                                          |
+| ---------- | ------------------------------------------- |
+| JDK / 框架   | JDK 17 / Spring Boot 3.2.x                  |
+| RPC        | Apache Dubbo 3.3.x（Triple / HTTP/2）         |
+| 注册中心       | Kubernetes API（`kubernetes://`）              |
+| 缓存 / 锁     | Redis（Jedis：BitMap + SETNX）                 |
+| 数据库        | MySQL 8.0 + MyBatis-Plus 3.5.x              |
+| 监控         | Micrometer + Prometheus                     |
+| 全链路追踪      | OpenTelemetry 1.31 + Jaeger（OTLP/HTTP 4318） |
 
 ## 工程结构
 
@@ -20,14 +21,22 @@ gaia/
 ├── pom.xml                           # 父 POM
 ├── gaia-common/                      # Result / DateUtils / RedisKeys
 ├── gaia-api/                         # RPC 接口契约：sign / lottery
-├── gaia-gateway/                     # 唯一 HTTP 入口（@RestController）
-└── gaia-server/                      # 唯一服务进程：entity / mapper / service / config
+├── gaia-domain/                      # DDD 领域层（Entity / Repository 接口）
+├── gaia-server/                      # 应用层：Dubbo Provider 承载方
+├── gaia-infra/                       # DDD 基础设施层（Mapper / Repository 实现）
+├── gaia-gateway/                     # 唯一 C 端 HTTP 入口（@RestController）
+└── gaia-backend/                     # 后台管理 HTTP 入口（端口 8088）
 ```
 
 ## 关键约束
 
 - gaia-server：**仅** `@DubboService(group="…", version="1.0.0")`，**不**含 HTTP 业务注解。
 - gaia-gateway：**仅** `@RestController`，**不**含业务逻辑。
+- gaia-backend：后台管理进程，端口 8088，鉴权本期不实现。
+- DDD 依赖方向：
+  - `gaia-server` → `gaia-domain`、`gaia-api`、`gaia-common`
+  - `gaia-backend` → `gaia-domain`、`gaia-common`
+  - `gaia-infra` → `gaia-domain`、`gaia-server`（实现领域层 Repository 接口）
 - 注册中心使用 Kubernetes API，Pod 内通过 ServiceAccount 读取 Endpoints（详见 `deploy/k8s/`）。
 - 所有 HTTPS / TLS / 域名 均**未启用**，Ingress 仅做 `pathType: Prefix`。
 
@@ -71,11 +80,13 @@ curl 'http://localhost:8080/actuator/prometheus'
 kubectl create namespace gaia
 kubectl apply -f deploy/k8s/gaia-gateway.yaml      # 含 SA / ClusterRoleBinding
 kubectl apply -f deploy/k8s/gaia-server.yaml
+kubectl apply -f deploy/k8s/gaia-backend.yaml
 kubectl apply -f deploy/k8s/gateway-ingress.yaml
 ```
 
 ## 后续路线
 
 - gaia-module-lottery 二期实现：限流、Redis 库存、概率算法、防刷。
-- 接入 Zipkin（`dubbo-spring-boot-tracing-brave-zipkin-starter` + `micrometer-tracing-bridge-brave`）做全链路追踪。
 - 引入 Spring Authorization Server 统一鉴权。
+- 当前已用 OpenTelemetry + Jaeger 替换 Zipkin：端点 `http://jaeger:4318/v1/traces`（本地开发 `http://127.0.0.1:4318/v1/traces`），日志 MDC key 为 `trace_id` / `span_id`（区别于旧的 Brave `traceId` / `spanId`）。
+- Dubbo 3.2 没有官方 OTLP starter，DUBBO RPC 链路依靠全局 W3C propagator 传播 trace context；后续评估接入 `opentelemetry-spring-boot-starter` 或 Dubbo OTel 社区模块。

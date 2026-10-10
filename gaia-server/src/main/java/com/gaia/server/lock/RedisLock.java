@@ -17,7 +17,7 @@ import java.util.Collections;
  * <p>用于签到场景下防止同一用户并发重入。</p>
  *
  * <p>底层使用 {@link StringRedisTemplate}（Spring Data Redis + Lettuce），
- * 配合 Lettuce 的 Micrometer Tracing 集成自动产出 Brave span，
+ * 配合 Lettuce 的 Micrometer Tracing 集成自动产出 OpenTelemetry span，
  * 业务代码无需显式埋点。</p>
  */
 @Slf4j

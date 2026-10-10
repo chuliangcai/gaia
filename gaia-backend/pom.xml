@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.gaia</groupId>
+        <artifactId>gaia</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>gaia-backend</artifactId>
+    <name>gaia-backend</name>
+    <description>Gaia 后台管理进程（端口 8088）：依赖 gaia-domain 的领域接口，由 gaia-infra 提供 Repository 实现。</description>
+
+    <dependencies>
+        <!-- 业务只面对领域层抽象：依赖倒置 -->
+        <dependency>
+            <groupId>com.gaia</groupId>
+            <artifactId>gaia-domain</artifactId>
+        </dependency>
+
+        <!-- Web -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- 监控 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+
+        <!-- API 文档（与 gaia-gateway 保持一致） -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!-- 覆盖父 pom pluginManagement 中的 skip=true -->
+                    <skip>false</skip>
+                    <!--
+                      完整启动参数（profile / OTEL_EXPORTER_OTLP_TRACES_ENDPOINT / mysql password 等）
+                      由根 pom 的 dev-backend profile 注入：
+                        mvn spring-boot:run -pl gaia-backend -am -P dev-backend
+                    -->
+                    <mainClass>${spring-boot.run.mainClass}</mainClass>
+                    <jvmArguments>${spring-boot.jvmArguments}</jvmArguments>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

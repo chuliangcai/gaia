@@ -21,8 +21,11 @@
     <modules>
         <module>gaia-common</module>
         <module>gaia-api</module>
-        <module>gaia-gateway</module>
+        <module>gaia-domain</module>
         <module>gaia-server</module>
+        <module>gaia-infra</module>
+        <module>gaia-gateway</module>
+        <module>gaia-backend</module>
     </modules>
 
     <properties>
@@ -38,6 +41,21 @@
         <mybatis-plus.version>3.5.7</mybatis-plus.version>
         <mysql.version>8.0.33</mysql.version>
         <lombok.version>1.18.32</lombok.version>
+
+        <!--
+          全链路追踪：OpenTelemetry + Jaeger（OTLP/HTTP）。
+          与 Spring Boot 3.2.5 配套：
+            - micrometer-tracing 1.2.5
+            - opentelemetry 1.31.0
+            - opentelemetry-instrumentation 2.1.0-alpha（含 opentelemetry-logback-mdc-1.0）
+          Eclipse m2e 解析依赖时不会回退到 SB BOM，因此在此显式锁定。
+        -->
+        <micrometer-tracing.version>1.2.5</micrometer-tracing.version>
+        <opentelemetry.version>1.31.0</opentelemetry.version>
+        <opentelemetry-instrumentation.version>2.1.0-alpha</opentelemetry-instrumentation.version>
+
+        <!-- OTLP 默认端点：Jaeger 原生 OTLP/HTTP，端口 4318；运行时由 OTEL_EXPORTER_OTLP_TRACES_ENDPOINT 覆盖 -->
+        <otel.exporter.otlp.traces.endpoint>http://127.0.0.1:4318/v1/traces</otel.exporter.otlp.traces.endpoint>
     </properties>
 
     <dependencyManagement>
@@ -100,22 +118,43 @@
             <!-- Spring Data Redis / Lettuce 版本由 Spring Boot BOM 管理，无需显式声明 -->
 
             <!--
-              Micrometer / Brave / Tracing 等版本由 spring-boot-starter-parent → spring-boot-dependencies BOM
+              Micrometer / OpenTelemetry / Tracing 等版本由 spring-boot-starter-parent → spring-boot-dependencies BOM
               统一管理，子模块直接无版本依赖即可。
               （不要在本 dependencyManagement 重复声明这些条目，否则会覆盖 BOM 的版本解析，导致 'version is missing'。）
             -->
 
-            <!-- Dubbo 官方 Brave/Zipkin 集成：装配 Brave Tracer + Zipkin reporter + Dubbo TracingFilter -->
+            <!--
+              OpenTelemetry OTLP Exporter：默认将 trace span 发送至 Jaeger（原生支持 OTLP/HTTP，端口 4318）。
+              端点由 OTEL_EXPORTER_OTLP_TRACES_ENDPOINT 环境变量或 application.yml otlp.traces.endpoint 覆盖。
+            -->
             <dependency>
-                <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-spring-boot-tracing-brave-zipkin-starter</artifactId>
-                <version>${dubbo.version}</version>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-exporter-otlp</artifactId>
+                <version>${opentelemetry.version}</version>
+            </dependency>
+            <!--
+              Logback MDC 桥（1.0）：在每条日志注入 trace_id / span_id 到 MDC，
+              key 名约定为 trace_id / span_id（区别于之前 brave 的 traceId/spanId）。
+            -->
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-logback-mdc-1.0</artifactId>
+                <version>${opentelemetry-instrumentation.version}</version>
+            </dependency>
+            <!--
+              Micrometer Tracing → OpenTelemetry 桥：让 Spring Boot 内置的 Observation API（HTTP 入口、
+              JDBC / Redis 等）产出的 span 通过 OTel 上报。
+            -->
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-tracing-bridge-otel</artifactId>
+                <version>${micrometer-tracing.version}</version>
             </dependency>
 
             <!--
               Datasource Micrometer（JDBC Observation 替代品）：
               Spring Boot 3.5+ 可直接通过该 starter 为 JDBC 连接获取 / SQL 执行
-              产出 Observation，并由 micrometer-tracing-bridge-brave 桥接为 Brave span，
+              产出 Observation，并由 micrometer-tracing-bridge-otel 桥接为 OTel span，
               替换自研 MybatisSqlObservationInterceptor。
               该依赖不在 Spring Boot BOM 中，需要显式声明版本。
             -->
@@ -141,7 +180,17 @@
             </dependency>
             <dependency>
                 <groupId>com.gaia</groupId>
+                <artifactId>gaia-domain</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.gaia</groupId>
                 <artifactId>gaia-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.gaia</groupId>
+                <artifactId>gaia-infra</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
@@ -193,8 +242,11 @@
       用法:
         mvn spring-boot:run -pl gaia-server -am -P dev-server
         mvn spring-boot:run -pl gaia-gateway -am -P dev-gateway
-      全链路追踪：Zipkin / Brave（不再依赖 javaagent）
-        - zipkin.endpoint 通过 -DZIPKIN_ENDPOINT=... 注入（application.yml 中以 ${ZIPKIN_ENDPOINT} 占位）
+        mvn spring-boot:run -pl gaia-backend -am -P dev-backend
+      全链路追踪：OpenTelemetry + Jaeger（OTLP/HTTP，不再依赖 javaagent）
+        - 端点通过 -DOTEL_EXPORTER_OTLP_TRACES_ENDPOINT=... 注入
+          （application.yml 中以 ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:...} 占位）
+        - 默认指向 Jaeger（http://jaeger:4318/v1/traces 或本地 127.0.0.1:4318）
         - 采样率由 management.tracing.sampling.probability 配置（默认 1.0）
     -->
     <profiles>
@@ -212,10 +264,10 @@
             <properties>
                 <spring-boot.run.mainClass>com.gaia.server.GaiaServerApplication</spring-boot.run.mainClass>
                 <spring.profiles.active>dev</spring.profiles.active>
-                <zipkin.endpoint>http://127.0.0.1:9411/api/v2/spans</zipkin.endpoint>
+                <otel.exporter.otlp.traces.endpoint>http://127.0.0.1:4318/v1/traces</otel.exporter.otlp.traces.endpoint>
                 <dubbo.registry.register>false</dubbo.registry.register>
                 <jvm.add-opens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED</jvm.add-opens>
-                <spring-boot.jvmArguments>${jvm.add-opens} -Dspring.profiles.active=${spring.profiles.active} -Ddubbo.registry.register=${dubbo.registry.register} -DZIPKIN_ENDPOINT=${zipkin.endpoint} -DMYSQL_PASSWORD=12345</spring-boot.jvmArguments>
+                <spring-boot.jvmArguments>${jvm.add-opens} -Dspring.profiles.active=${spring.profiles.active} -Ddubbo.registry.register=${dubbo.registry.register} -DOTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${otel.exporter.otlp.traces.endpoint} -DMYSQL_PASSWORD=12345</spring-boot.jvmArguments>
             </properties>
         </profile>
 
@@ -225,9 +277,22 @@
             <properties>
                 <spring-boot.run.mainClass>com.gaia.gateway.GaiaGatewayApplication</spring-boot.run.mainClass>
                 <spring.profiles.active>dev</spring.profiles.active>
-                <zipkin.endpoint>http://127.0.0.1:9411/api/v2/spans</zipkin.endpoint>
+                <otel.exporter.otlp.traces.endpoint>http://127.0.0.1:4318/v1/traces</otel.exporter.otlp.traces.endpoint>
                 <jvm.add-opens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED</jvm.add-opens>
-                <spring-boot.jvmArguments>${jvm.add-opens} -Dspring.profiles.active=${spring.profiles.active} -DZIPKIN_ENDPOINT=${zipkin.endpoint}</spring-boot.jvmArguments>
+                <spring-boot.jvmArguments>${jvm.add-opens} -Dspring.profiles.active=${spring.profiles.active} -DOTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${otel.exporter.otlp.traces.endpoint}</spring-boot.jvmArguments>
+            </properties>
+        </profile>
+
+        <!-- gaia-backend: dev 参数，独立端口 8088，关闭 Dubbo 注册推送 -->
+        <profile>
+            <id>dev-backend</id>
+            <properties>
+                <spring-boot.run.mainClass>com.gaia.backend.GaiaBackendApplication</spring-boot.run.mainClass>
+                <spring.profiles.active>dev</spring.profiles.active>
+                <otel.exporter.otlp.traces.endpoint>http://127.0.0.1:4318/v1/traces</otel.exporter.otlp.traces.endpoint>
+                <dubbo.registry.register>false</dubbo.registry.register>
+                <jvm.add-opens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED</jvm.add-opens>
+                <spring-boot.jvmArguments>${jvm.add-opens} -Dspring.profiles.active=${spring.profiles.active} -Ddubbo.registry.register=${dubbo.registry.register} -DOTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${otel.exporter.otlp.traces.endpoint} -DMYSQL_PASSWORD=12345</spring-boot.jvmArguments>
             </properties>
         </profile>
     </profiles>

@@ -22,7 +22,7 @@ import java.util.List;
  * 内存占用低且查询效率 O(1)。</p>
  *
  * <p>底层使用 {@link StringRedisTemplate}（Spring Data Redis + Lettuce），
- * 由 Lettuce Micrometer Tracing 自动为每条 Redis 命令产出 Brave span，
+ * 由 Lettuce Micrometer Tracing 自动为每条 Redis 命令产出 OpenTelemetry span，
  * 业务代码无需显式埋点。</p>
  */
 @Slf4j

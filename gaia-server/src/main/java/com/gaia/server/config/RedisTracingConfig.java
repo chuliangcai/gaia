@@ -11,13 +11,13 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Redis 全链路追踪配置（Lettuce + Micrometer Observation）。
  *
- * <p>Spring Boot 3.2 + Spring Data Redis 3.2 默认只把 Brave/Micrometer Tracer 注入到 Lettuce 的
+ * <p>Spring Boot 3.2 + Spring Data Redis 3.2 默认只把 OpenTelemetry/Micrometer Tracer 注入到 Lettuce 的
  * {@link ClientResources}，并不会自动启用 Lettuce 的 {@link MicrometerTracing}（即不会把每条
  * Redis 命令包装为 {@code redis.command.*} Observation）。这里通过 {@link LettuceClientConfigurationBuilderCustomizer}
  * 把 {@code MicrometerTracing} 注入到自动装配的 {@link io.lettuce.core.RedisClient}，
  * 这样每条 Redis 命令都会成为 Observation，并由
- * {@code micrometer-tracing-bridge-brave} 桥接为 Brave span，
- * 在 Zipkin UI 中显示为 {@code redis.command.<command>} 节点。</p>
+ * {@code micrometer-tracing-bridge-otel} 桥接为 OpenTelemetry span，
+ * 在 Jaeger UI 中显示为 {@code redis.command.<command>} 节点。</p>
  */
 @Slf4j
 @Configuration
@@ -32,7 +32,7 @@ public class RedisTracingConfig {
                     .tracing(new MicrometerTracing(observationRegistry, "redis"))
                     .build();
             clientConfigurationBuilder.clientResources(clientResources);
-            log.info("已为 lettuce 启用 Micrometer Tracing，Redis 命令将自动产出 Brave span");
+            log.info("已为 lettuce 启用 Micrometer Tracing，Redis 命令将自动产出 OTel span");
         };
     }
 }

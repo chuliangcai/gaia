@@ -39,9 +39,6 @@ spring:
       continue-on-error: false
   main:
     allow-bean-definition-overriding: true
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.actuate.autoconfigure.tracing.zipkin.ZipkinAutoConfiguration
 
 # ===================== MyBatis-Plus =====================
 mybatis-plus:
@@ -70,7 +67,7 @@ management:
       application: ${spring.application.name}
   tracing:
     sampling:
-      probability: ${ZIPKIN_SAMPLING_RATE:1.0}
+      probability: ${OTEL_SAMPLING_RATE:1.0}
   observations:
     annotations:
       enabled: true
@@ -85,4 +82,5 @@ logging:
     org.apache.dubbo: INFO
     org.apache.dubbo.config.spring.beans.factory.annotation: INFO
   pattern:
-    console: "%d{HH:mm:ss.SSS} [%thread] [traceId=%X{traceId:-} spanId=%X{spanId:-}] %-5level %logger{36} - %msg%n"
+    # opentelemetry-logback-mdc-1.0 把 traceId / spanId 写入 MDC（key 为 trace_id / span_id）。
+    console: "%d{HH:mm:ss.SSS} [%thread] [trace_id=%X{trace_id:-} span_id=%X{span_id:-}] %-5level %logger{36} - %msg%n"

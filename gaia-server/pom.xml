@@ -19,6 +19,11 @@
             <groupId>com.gaia</groupId>
             <artifactId>gaia-common</artifactId>
         </dependency>
+        <!-- DDD 落地：gaia-server 作为应用层，仅依赖领域层（不直接依赖 infra） -->
+        <dependency>
+            <groupId>com.gaia</groupId>
+            <artifactId>gaia-domain</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.gaia</groupId>
             <artifactId>gaia-api</artifactId>
@@ -59,28 +64,34 @@
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
 
-        <!-- Zipkin / Brave：把 traceId 写入 MDC（由 Dubbo starter 装配 Brave Tracer） -->
-        <dependency>
-            <groupId>io.zipkin.brave</groupId>
-            <artifactId>brave-context-slf4j</artifactId>
-        </dependency>
-        <!-- Micrometer Observation → Brave 桥：让 MyBatis/JDBC 等也建 Brave span -->
+        <!--
+          全链路追踪：OpenTelemetry + Jaeger
+          - micrometer-tracing-bridge-otel：让 Spring Boot 内置 Observation API（HTTP 入口 / JDBC / Redis）
+            产出的 span 通过 OTel 上报。
+          - opentelemetry-exporter-otlp：通过 OTLP/HTTP 把 trace 发到 Jaeger（默认 4318）。
+          - opentelemetry-logback-mdc-1.0：把 trace_id / span_id 注入 logback MDC，替换原 brave-context-slf4j。
+          Dubbo 3.2 没有官方 OTLP starter，移除原 brave-zipkin starter；
+          RPC 上下文通过全局 W3C propagator 传播。
+        -->
         <dependency>
             <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-tracing-bridge-brave</artifactId>
+            <artifactId>micrometer-tracing-bridge-otel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-exporter-otlp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry.instrumentation</groupId>
+            <artifactId>opentelemetry-logback-mdc-1.0</artifactId>
         </dependency>
         <!--
           JDBC Observation：自动为 JDBC 连接获取 / SQL 执行产出 Observation，
-          经 micrometer-tracing-bridge-brave 桥接为 Brave span（替换自研 MybatisSqlObservationInterceptor）。
+          经 micrometer-tracing-bridge-otel 桥接为 OTel span（替换自研 MybatisSqlObservationInterceptor）。
         -->
         <dependency>
             <groupId>net.ttddyy.observation</groupId>
             <artifactId>datasource-micrometer-spring-boot</artifactId>
-        </dependency>
-        <!-- Dubbo 官方 Brave/Zipkin 集成：装配 Brave Tracer + Zipkin reporter + Dubbo TracingFilter -->
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-spring-boot-tracing-brave-zipkin-starter</artifactId>
         </dependency>
 
         <!-- MyBatis-Plus + MySQL -->
@@ -95,8 +106,8 @@
 
         <!--
           Spring Data Redis + Lettuce（自带 Micrometer Observation tracing，
-          可与 micrometer-tracing-bridge-brave 桥接，由 Spring Boot 3 自动为
-          每条 Redis 命令产出 Brave span，业务代码无需改动）。
+          由 micrometer-tracing-bridge-otel 桥接到 OpenTelemetry 后，
+          Spring Boot 3 自动为每条 Redis 命令产出 OTel span，业务代码无需改动）。
         -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -133,7 +144,7 @@
                     <skip>false</skip>
                     <!--
                       默认 jvmArguments 仅含 add-opens（避免 JDK 17 反射限制）。
-                      完整启动参数（profile / dubbo / zipkin.endpoint 等）
+                      完整启动参数（profile / dubbo / OTEL_EXPORTER_OTLP_TRACES_ENDPOINT 等）
                       由根 pom 的 dev-server profile 注入：
                         mvn spring-boot:run -P dev-server
                     -->

@@ -3,16 +3,22 @@
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
     <!--
-      使用 Spring Boot 的 default.xml + CONSOLE_LOG_PATTERN（默认已含 traceId/spanId 占位）。
-      brave-context-slf4j 会把 traceId / spanId 写入 MDC，无需自定义 pattern。
+      全链路追踪：OpenTelemetry + Jaeger
+      opentelemetry-logback-mdc-1.0 的 OpenTelemetryAppender 自动写入 trace_id / span_id 到 MDC，
+      替换之前的 brave-context-slf4j 方案。
     -->
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="OTEL_CONSOLE" class="io.opentelemetry.instrumentation.logback.mdc.v1_0.OpenTelemetryAppender">
+        <appender-ref ref="CONSOLE_BASE"/>
+    </appender>
+
+    <appender name="CONSOLE_BASE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] [trace_id=%X{trace_id:-} span_id=%X{span_id:-}] %-5level %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
         </encoder>
     </appender>
 
     <root level="INFO">
-        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="OTEL_CONSOLE"/>
     </root>
 </configuration>

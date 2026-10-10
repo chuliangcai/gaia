@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.gaia</groupId>
+        <artifactId>gaia</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>gaia-infra</artifactId>
+    <name>gaia-infra</name>
+    <description>Gaia 基础设施层：实现 gaia-domain 的 Repository 接口、承载 MyBatis-Plus Mapper 与 DB 配置。反向依赖 gaia-domain 与 gaia-server。</description>
+
+    <dependencies>
+        <!-- 依赖倒置：实现领域层抽象 -->
+        <dependency>
+            <groupId>com.gaia</groupId>
+            <artifactId>gaia-domain</artifactId>
+        </dependency>
+        <!--
+          反向依赖 gaia-server：复用其与基础设施相关的共用部分（数据源配置、健康检查骨架）。
+          严格分层下这一依赖可去除——本期按 DDD 落地方案保留。
+        -->
+        <dependency>
+            <groupId>com.gaia</groupId>
+            <artifactId>gaia-server</artifactId>
+        </dependency>
+
+        <!-- MyBatis-Plus + MySQL 驱动 -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+        </dependency>
+
+        <!-- Spring Boot 自动配置相关 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot</artifactId>
+        </dependency>
+        <!-- JDBC 透出（@Transactional 等仍由应用层引入） -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+        </dependency>
+    </dependencies>
+</project>
