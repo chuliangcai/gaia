@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * 能力接口。
  *
- * <p>实现类通过 {@link com.gaia.iframework.annotation.Ability} 注册，
+ * <p>实现类通过 {@code @Ability}（位于 {@code com.gaia.domain.ability}）注册，
  * 由框架按 {@code ModelRequest.assertType} 分派执行。</p>
  */
 public interface IAbility {

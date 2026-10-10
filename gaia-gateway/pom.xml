@@ -26,6 +26,17 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!--
+          HTTP Session 持久化：Spring Session + Redis
+          - 用以支撑"切用户"面板：选完用户写入 HttpSession.attribute，
+            后续 /api/interact 自动以 session.userId 为准（覆盖请求体）。
+          - 依赖 spring-data-redis + Lettuce（Spring Boot BOM 管版本）。
+        -->
+        <dependency>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session-data-redis</artifactId>
+        </dependency>
+
         <!-- Dubbo（Zookeeper 注册中心，dubbo-kubernetes 仅 K8s 注册模式需要） -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>

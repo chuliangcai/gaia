@@ -11,6 +11,10 @@ import java.lang.annotation.Target;
  * <p>标注一个扩展点接口（要求继承
  * {@link com.gaia.iframework.core.IAbilityExt}），
  * 框架以此作为扩展实现的契约查找依据。</p>
+ *
+ * <p>注意：能力元数据 {@code @Ability} 已下沉到领域层
+ * （{@code com.gaia.domain.ability.Ability}），本注解作为玩法层扩展点仍
+ * 保留在通用框架层。</p>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

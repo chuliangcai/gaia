@@ -13,23 +13,23 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * <p>scanBasePackages 同时扫描：</p>
  * <ul>
  *   <li>{@code com.gaia.bootstrap} — 本模块的主类所在包</li>
- *   <li>{@code com.gaia.server} — gaia-app 的应用层 Bean（@Service / @DubboService 等）</li>
+ *   <li>{@code com.gaia.app} — gaia-app 的应用层 Bean（@Service / @DubboService 等）</li>
  *   <li>{@code com.gaia.infra} — gaia-infra 的基础设施 Bean（Repository 实现 / Mapper）</li>
  *   <li>{@code com.gaia.common} / {@code com.gaia.api} — 公共模块</li>
  * </ul>
  */
 @SpringBootApplication(scanBasePackages = {
         "com.gaia.bootstrap",
-        "com.gaia.server",
+        "com.gaia.app",
         "com.gaia.infra",
         "com.gaia.common",
         "com.gaia.api"
 })
 @MapperScan({
-        "com.gaia.server.mapper",       // gaia-app 内的 MyBatis Mapper
+        "com.gaia.app.mapper",       // gaia-app 内的 MyBatis Mapper
         "com.gaia.infra.persistence.mapper"  // gaia-infra 内的 MyBatis Mapper
 })
-@EnableDubbo
+@EnableDubbo(scanBasePackages = {"com.gaia.app"})
 @EnableTransactionManagement
 @EnableScheduling
 public class GaiaBootstrapApplication {

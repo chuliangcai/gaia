@@ -1,6 +1,6 @@
 package com.gaia.domain.repository;
 
-import com.gaia.domain.activity.ActivityRecord;
+import com.gaia.domain.base.activity.ActivityRecord;
 
 import java.util.List;
 import java.util.Optional;

@@ -6,7 +6,7 @@
 # =========================================================
 
 server:
-  port: 8080
+  port: 8090
   servlet:
     context-path: /
 
@@ -14,8 +14,8 @@ spring:
   application:
     name: gaia-gateway
   profiles:
-    # 默认 test；本地开发通过 -Dspring.profiles.active=dev 切到直连
-    active: ${SPRING_PROFILES_ACTIVE:test}
+    # 默认 dev（本地开发，docker-compose 起 ZK 即可）；test / prod 通过 -Dspring.profiles.active= 或 SPRING_PROFILES_ACTIVE 切换
+    active: ${SPRING_PROFILES_ACTIVE:dev}
   main:
     allow-bean-definition-overriding: true
 

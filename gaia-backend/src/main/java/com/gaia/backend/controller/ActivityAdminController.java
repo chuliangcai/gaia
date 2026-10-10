@@ -7,7 +7,7 @@ import com.gaia.api.activity.ActivityViewDTO;
 import com.gaia.api.activity.TaskConfigDTO;
 import com.gaia.common.constants.DubboConstants;
 import com.gaia.common.dto.Result;
-import com.gaia.domain.activity.Activity;
+import com.gaia.domain.base.activity.Activity;
 import com.gaia.domain.repository.ActivityRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

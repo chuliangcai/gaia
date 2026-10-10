@@ -7,6 +7,7 @@ import com.gaia.iframework.core.GatewayMtopRequest;
 import com.gaia.iframework.core.InteractResultSet;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
@@ -37,19 +38,30 @@ public class InteractController {
 
     /**
      * 执行一笔玩法请求。
+     *
+     * <p>userId 解析优先级：HttpSession 中保存的 "gaia.currentUserId" &gt; body.userId。
+     * 前者由 {@code AuthController#switchUser} 写入，后者保留作为未登录场景下的 fallback。</p>
      */
     @PostMapping
     @Operation(summary = "执行玩法",
             description = "按请求体中 models 列出的能力，逐个分派至 server 端 AbilityDispatcher；"
                     + "返回各能力执行结果的聚合")
     public Result<InteractResultSet> execute(
-            @RequestBody GatewayMtopRequest request) {
+            @RequestBody GatewayMtopRequest request,
+            HttpServletRequest http) {
         if (request == null) {
             log.warn("interact 收到空请求");
             return Result.fail(Result.CodeEnum.BAD_REQUEST);
         }
-        log.info("interact entry bizCode={} userId={} models={}",
-                request.getBizCode(), request.getUserId(),
+        Long sessionUserId = AuthController.currentUserId(http);
+        Long bodyUserId = request.getUserId();
+        Long effectiveUserId = sessionUserId != null ? sessionUserId : bodyUserId;
+        if (effectiveUserId != null) {
+            request.setUserId(effectiveUserId);
+        }
+        log.info("interact entry bizCode={} userId={} (session={}, body={}) models={}",
+                request.getBizCode(), effectiveUserId,
+                sessionUserId, bodyUserId,
                 request.getModels() == null ? 0 : request.getModels().size());
         InteractResultSet out = interactEngineService.execute(request);
         return Result.success(out);

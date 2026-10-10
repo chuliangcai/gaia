@@ -1,14 +1,13 @@
 -- ==========================================
 -- Gaia 服务全部库表结构（MySQL 8.0）
---   - gaia         : 签到
---   - gaia_treasure: 会员夺宝
+--   - 单库 `gaia`：签到 + 会员夺宝 物理合并
 --
 -- 全部使用 CREATE ... IF NOT EXISTS，无 DROP，启动幂等。
 -- 用法: mysql -h127.0.0.1 -uroot -p12345 < schema.sql
 -- ==========================================
 
 -- ----------------------------------------------------------
--- 库: gaia (签到)
+-- 库: gaia (签到 + 会员夺宝)
 -- ----------------------------------------------------------
 CREATE DATABASE IF NOT EXISTS `gaia` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE `gaia`;
@@ -26,12 +25,6 @@ CREATE TABLE IF NOT EXISTS `user_sign_record` (
     UNIQUE KEY `uk_user_date` (`user_id`, `sign_date`),
     KEY `idx_user_ym` (`user_id`, `year_month`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户签到记录';
-
--- ----------------------------------------------------------
--- 库: gaia_treasure (会员夺宝)
--- ----------------------------------------------------------
-CREATE DATABASE IF NOT EXISTS `gaia_treasure` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-USE `gaia_treasure`;
 
 -- 活动主表
 CREATE TABLE IF NOT EXISTS `gaia_activity` (

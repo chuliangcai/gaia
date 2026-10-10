@@ -57,7 +57,7 @@ frontend-mobile/
 ```bash
 cd frontend-mobile
 pnpm install
-pnpm dev          # http://localhost:5173 （手机扫码可访问）
+pnpm dev          # http://localhost:5180 （手机扫码可访问）
 ```
 
 `/api/*` 请求会被 Vite dev server 反代到 `http://127.0.0.1:8080`（gaia-gateway）。
@@ -82,7 +82,7 @@ GET /api/activities
 
 ### 会员夺宝详情（活动页）
 
-后续接入 `GET /api/activities/:id` 或经 `/api/interact` 走 `ActivityPageAbility`。
+后续接入 `GET /api/activities/:id` 或经 `/api/interact` 走 treasure 玩法下的 task / draw 两个 ability。
 
 ### 大转盘抽奖（保留）
 

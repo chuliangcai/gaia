@@ -8,6 +8,7 @@ import com.gaia.infra.persistence.po.MemberPO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -36,6 +37,20 @@ public class MemberRepositoryImpl implements MemberRepository {
         }
         member.setId(po.getId());
         return member;
+    }
+
+    @Override
+    public List<Long> listActiveUserIds() {
+        QueryWrapper<MemberPO> qw = new QueryWrapper<>();
+        qw.select("DISTINCT user_id")
+                .eq("status", 1)
+                .isNotNull("user_id")
+                .orderByAsc("user_id");
+        return mapper.selectList(qw).stream()
+                .map(po -> po.getUserId())
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .collect(java.util.stream.Collectors.toList());
     }
 
     // ----------------------- PO ↔ Domain -----------------------

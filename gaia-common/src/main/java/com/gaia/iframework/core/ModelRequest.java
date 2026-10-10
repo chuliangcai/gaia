@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * 单个能力的子请求。
  *
- * <p>{@code assertType} 与 {@link com.gaia.iframework.annotation.Ability#code()} 对应；
+ * <p>{@code assertType} 与 {@code @Ability#code()}（位于 {@code com.gaia.domain.ability}）对应；
  * {@code subType} 在同一能力内区分子场景（如签到 vs 补签）。
  * {@code extParams} 用于透传子场景内的自由参数（如签到日历的 {@code yearMonth}）。</p>
  */

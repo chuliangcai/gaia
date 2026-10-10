@@ -1,6 +1,6 @@
 package com.gaia.domain.repository;
 
-import com.gaia.domain.activity.ActivityTask;
+import com.gaia.domain.base.activity.ActivityTask;
 
 import java.util.List;
 import java.util.Optional;

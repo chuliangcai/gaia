@@ -8,7 +8,7 @@
 # ===================== 数据库 =====================
 spring:
   datasource:
-    # K8s 默认走签到库 `gaia`；通过 MYSQL_DB 环境变量可切换到 gaia_treasure 等。
+    # 所有业务（签到 / 夺宝）共用一个库 `gaia`；通过 MYSQL_DB 环境变量可整体切换。
     url: jdbc:mysql://${MYSQL_HOST:host.docker.internal}:${MYSQL_PORT:3306}/${MYSQL_DB:gaia}?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&allowMultiQueries=true&createDatabaseIfNotExist=true
     username: ${MYSQL_USER:root}
     password: ${MYSQL_PASSWORD:12345}

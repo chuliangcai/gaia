@@ -1,7 +1,7 @@
 package com.gaia.infra.persistence.repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.gaia.domain.activity.Activity;
+import com.gaia.domain.base.activity.Activity;
 import com.gaia.domain.repository.ActivityRepository;
 import com.gaia.infra.persistence.mapper.ActivityMapper;
 import com.gaia.infra.persistence.po.ActivityPO;

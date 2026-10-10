@@ -71,7 +71,7 @@ java -jar gaia-backend/target/gaia-backend.jar         # 管理端 HTTP，端口
 mvn spring-boot:run -pl gaia-bootstrap -am -P dev-bootstrap
 
 # 5. 启动前端（另开终端）
-cd frontend-mobile && pnpm install && pnpm dev     # http://localhost:5173
+cd frontend-mobile && pnpm install && pnpm dev     # http://localhost:5180
 cd frontend-backend && pnpm install && pnpm dev    # http://localhost:5174
 ```
 

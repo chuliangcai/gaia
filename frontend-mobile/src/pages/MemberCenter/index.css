@@ -71,3 +71,180 @@
   color: #8e8e93;
   font-size: 13px;
 }
+
+/* ===================== 悬浮按钮 (FAB) ===================== */
+.fab {
+  position: fixed;
+  right: 18px;
+  bottom: calc(env(safe-area-inset-bottom) + 18px);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 22px;
+  border: none;
+  background: linear-gradient(135deg, #ff4d6d 0%, #ff7a8a 100%);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(255, 77, 109, 0.35);
+  cursor: pointer;
+  z-index: 100;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.fab:active {
+  transform: scale(0.96);
+  box-shadow: 0 2px 8px rgba(255, 77, 109, 0.25);
+}
+
+.fab__icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.fab__label {
+  letter-spacing: 0.4px;
+}
+
+/* ===================== 用户选择面板 ===================== */
+.picker-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 200;
+  animation: picker-fade-in 160ms ease;
+}
+
+.picker {
+  width: 100%;
+  max-width: 480px;
+  max-height: 70vh;
+  background: #fff;
+  border-radius: 18px 18px 0 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: picker-slide-up 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.picker__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid #f1e7ec;
+}
+
+.picker__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #2b2235;
+}
+
+.picker__close {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  color: #8e8e93;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.picker__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 14px calc(env(safe-area-inset-bottom) + 16px);
+}
+
+.picker__loading,
+.picker__empty,
+.picker__error {
+  padding: 24px;
+  text-align: center;
+  color: #8e8e93;
+  font-size: 13px;
+}
+
+.picker__error {
+  color: #c0392b;
+}
+
+.picker__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.picker__item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid #f1e7ec;
+  border-radius: 12px;
+  background: #fdfafc;
+  color: #2b2235;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.picker__item:hover,
+.picker__item:focus {
+  background: #fdeef2;
+  outline: none;
+}
+
+.picker__item:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.picker__item--current {
+  background: #ffe1ea;
+  border-color: #ff4d6d;
+}
+
+.picker__item-id {
+  font-weight: 700;
+  font-size: 16px;
+  color: #ff4d6d;
+  min-width: 60px;
+}
+
+.picker__item-level {
+  flex: 1;
+  color: #6b4a5d;
+  font-size: 13px;
+}
+
+.picker__item-tag {
+  font-size: 11px;
+  color: #fff;
+  background: #ff4d6d;
+  padding: 2px 8px;
+  border-radius: 10px;
+  letter-spacing: 0.4px;
+}
+
+@keyframes picker-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes picker-slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}

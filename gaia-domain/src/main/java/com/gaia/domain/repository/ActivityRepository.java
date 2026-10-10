@@ -1,6 +1,6 @@
 package com.gaia.domain.repository;
 
-import com.gaia.domain.activity.Activity;
+import com.gaia.domain.base.activity.Activity;
 
 import java.time.LocalDateTime;
 import java.util.List;

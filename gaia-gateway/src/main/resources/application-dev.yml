@@ -21,6 +21,22 @@ dubbo:
   cloud:
     enabled: false
 
+# ===================== Redis（Spring Session 存储后端） =====================
+# gateway 通过 HttpSession 持有"当前用户 ID"，由 Spring Session 自动写入 Redis。
+spring:
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+      timeout: 2000ms
+  session:
+    # 切完用户保持 2 小时，足够 dev 调试；生产可缩短或结合 remember-me
+    timeout: 2h
+    redis:
+      namespace: gaia:session
+
 logging:
   level:
     com.gaia: DEBUG
