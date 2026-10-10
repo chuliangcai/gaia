@@ -16,6 +16,16 @@ public interface ActivityRepository {
     Optional<Activity> findByCode(String activityCode);
 
     /**
+     * 全量列表（后台管理用，按 id 倒序）。
+     */
+    List<Activity> findAll();
+
+    /**
+     * 物理删除（后台管理用）。
+     */
+    void deleteById(Long id);
+
+    /**
      * 查找应推进为"进行中"的活动：status=0 且 start_time <= now。
      */
     List<Activity> findStartingAt(LocalDateTime now);

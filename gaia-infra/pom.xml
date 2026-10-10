@@ -12,21 +12,13 @@
 
     <artifactId>gaia-infra</artifactId>
     <name>gaia-infra</name>
-    <description>Gaia 基础设施层：实现 gaia-domain 的 Repository 接口、承载 MyBatis-Plus Mapper 与 DB 配置。反向依赖 gaia-domain 与 gaia-server。</description>
+    <description>Gaia 基础设施层：实现 gaia-domain 的 Repository 接口、承载 MyBatis-Plus Mapper 与 DB 配置。反向依赖 gaia-domain。</description>
 
     <dependencies>
         <!-- 依赖倒置：实现领域层抽象 -->
         <dependency>
             <groupId>com.gaia</groupId>
             <artifactId>gaia-domain</artifactId>
-        </dependency>
-        <!--
-          反向依赖 gaia-server：复用其与基础设施相关的共用部分（数据源配置、健康检查骨架）。
-          严格分层下这一依赖可去除——本期按 DDD 落地方案保留。
-        -->
-        <dependency>
-            <groupId>com.gaia</groupId>
-            <artifactId>gaia-server</artifactId>
         </dependency>
 
         <!-- MyBatis-Plus + MySQL 驱动 -->

@@ -5,9 +5,10 @@ DDD 中的领域层。**只承载领域模型、值对象、Repository 接口与
 ## 依赖方向
 
 ```
-gaia-server    ──→  gaia-domain
-gaia-backend   ──→  gaia-domain
+gaia-app       ──→  gaia-domain
+gaia-bootstrap ──→  gaia-app + gaia-infra
 gaia-infra     ──→  gaia-domain   （实现 domain 定义的 Repository 接口）
+gaia-backend   ──→  gaia-domain
 ```
 
 ## 包结构

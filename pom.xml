@@ -22,8 +22,9 @@
         <module>gaia-common</module>
         <module>gaia-api</module>
         <module>gaia-domain</module>
-        <module>gaia-server</module>
+        <module>gaia-app</module>
         <module>gaia-infra</module>
+        <module>gaia-bootstrap</module>
         <module>gaia-gateway</module>
         <module>gaia-backend</module>
     </modules>
@@ -188,12 +189,17 @@
             </dependency>
             <dependency>
                 <groupId>com.gaia</groupId>
-                <artifactId>gaia-server</artifactId>
+                <artifactId>gaia-app</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.gaia</groupId>
                 <artifactId>gaia-infra</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.gaia</groupId>
+                <artifactId>gaia-bootstrap</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
@@ -243,7 +249,7 @@
       ${spring-boot.jvmArguments} 占位符引用，从而让 spring-boot-maven-plugin
       在子模块上正确启动。
       用法:
-        mvn spring-boot:run -pl gaia-server -am -P dev-server
+        mvn spring-boot:run -pl gaia-bootstrap -am -P dev-bootstrap
         mvn spring-boot:run -pl gaia-gateway -am -P dev-gateway
         mvn spring-boot:run -pl gaia-backend -am -P dev-backend
       全链路追踪：OpenTelemetry + OTLP/HTTP（对接 grafana/otel-lgtm / Jaeger 等，不再依赖 javaagent）
@@ -262,16 +268,15 @@
             </properties>
         </profile>
 
-        <!-- gaia-server: dev 参数 + 关闭 Dubbo 注册推送 -->
+        <!-- gaia-bootstrap: dev 参数（默认 dev profile，Dubbo 注册到 localhost ZK） -->
         <profile>
-            <id>dev-server</id>
+            <id>dev-bootstrap</id>
             <properties>
-                <spring-boot.run.mainClass>com.gaia.server.GaiaServerApplication</spring-boot.run.mainClass>
+                <spring-boot.run.mainClass>com.gaia.bootstrap.GaiaBootstrapApplication</spring-boot.run.mainClass>
                 <spring.profiles.active>dev</spring.profiles.active>
                 <otel.exporter.otlp.traces.endpoint>http://127.0.0.1:4318/v1/traces</otel.exporter.otlp.traces.endpoint>
-                <dubbo.registry.register>false</dubbo.registry.register>
                 <jvm.add-opens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED</jvm.add-opens>
-                <spring-boot.jvmArguments>${jvm.add-opens} -Dspring.profiles.active=${spring.profiles.active} -Ddubbo.registry.register=${dubbo.registry.register} -DOTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${otel.exporter.otlp.traces.endpoint} -DMYSQL_PASSWORD=12345</spring-boot.jvmArguments>
+                <spring-boot.jvmArguments>${jvm.add-opens} -Dspring.profiles.active=${spring.profiles.active} -DOTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${otel.exporter.otlp.traces.endpoint} -DMYSQL_PASSWORD=12345</spring-boot.jvmArguments>
             </properties>
         </profile>
 

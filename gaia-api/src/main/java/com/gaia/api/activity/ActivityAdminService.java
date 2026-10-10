@@ -20,6 +20,16 @@ public interface ActivityAdminService {
     void updateActivity(Long id, ActivityUpdateRequest req);
 
     /**
+     * 后台管理活动列表（按 id 倒序）。
+     */
+    List<ActivityViewDTO> listActivities();
+
+    /**
+     * 删除活动。
+     */
+    void deleteActivity(Long id);
+
+    /**
      * 配置某活动的任务清单（覆盖式）。
      */
     void configureTasks(Long activityId, List<TaskConfigDTO> tasks);

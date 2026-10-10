@@ -1,0 +1,73 @@
+.page--member-center {
+  padding: calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 24px);
+  min-height: 100%;
+}
+
+.member-center__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 4px 18px;
+}
+
+.member-center__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffb3c6 0%, #ff4d6d 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+  box-shadow: 0 2px 8px rgba(255, 77, 109, 0.25);
+}
+
+.member-center__user {
+  flex: 1;
+}
+
+.member-center__nick {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2b2235;
+}
+
+.member-center__level {
+  font-size: 12px;
+  color: #ff4d6d;
+  margin-top: 2px;
+}
+
+.member-center__section {
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 18px;
+  padding: 14px;
+  backdrop-filter: blur(6px);
+}
+
+.member-center__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b4a5d;
+  margin: 4px 6px 12px;
+}
+
+.member-center__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.member-center__loading,
+.member-center__empty,
+.member-center__error {
+  padding: 24px;
+  text-align: center;
+  color: #8e8e93;
+  font-size: 13px;
+}

@@ -1,18 +1,16 @@
 # =========================================================
-# dev profile：本地开发直连模式
-# SignController 的 @DubboReference 去掉 url 后，dev 需要单独的方式让它直连：
-#   通过 @PropertySource 或 VM 参数 -Dgaia.dubbo.sign.url=tri://127.0.0.1:20881/...
-# 此处给出默认占位（运行时如未注入该变量，Dubbo 走注册中心发现；本地未启注册中心时会失败）
+# dev profile：本地开发，Dubbo 注册中心 = Zookeeper
+# ZK 由 docker-compose 启动并把 2181 映射到宿主机 localhost，所以这里写 localhost:2181
 # =========================================================
 
-# ===================== Dubbo（直连，无注册中心） =====================
+# ===================== Dubbo（Zookeeper 注册中心） =====================
 dubbo:
   application:
     name: gaia-gateway
     qos-enable: false
-  # 直连模式下 address 留空
+    protocol: tri
   registry:
-    address: N/A
+    address: zookeeper://localhost:2181?timeout=10000
   protocol:
     name: tri
     port: -1

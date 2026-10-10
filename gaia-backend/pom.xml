@@ -21,6 +21,12 @@
             <artifactId>gaia-domain</artifactId>
         </dependency>
 
+        <!-- backend 把应用层 + 启动层放到一起，需要拿到 Repository 的实现 -->
+        <dependency>
+            <groupId>com.gaia</groupId>
+            <artifactId>gaia-infra</artifactId>
+        </dependency>
+
         <!-- 调用 server 端 Dubbo 服务 -->
         <dependency>
             <groupId>com.gaia</groupId>

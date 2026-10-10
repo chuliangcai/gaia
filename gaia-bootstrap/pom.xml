@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.gaia</groupId>
+        <artifactId>gaia</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>gaia-bootstrap</artifactId>
+    <name>gaia-bootstrap</name>
+    <description>启动模块：聚合 gaia-app（应用层）+ gaia-infra（基础设施层），承载 Spring Boot 入口与运行时资源（yml / logback / db schema）。这是 mvn spring-boot:run 的目标模块。</description>
+
+    <dependencies>
+        <!-- 应用层（@Service / @DubboService 实现 / Mapper / Entity） -->
+        <dependency>
+            <groupId>com.gaia</groupId>
+            <artifactId>gaia-app</artifactId>
+        </dependency>
+        <!-- 基础设施层（Repository 实现 / MapperScan / DataSource 配置） -->
+        <dependency>
+            <groupId>com.gaia</groupId>
+            <artifactId>gaia-infra</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!-- 覆盖父 pom pluginManagement 中的 skip=true -->
+                    <skip>false</skip>
+                    <!--
+                      默认 jvmArguments 仅含 add-opens（避免 JDK 17 反射限制）。
+                      完整启动参数（profile / dubbo / OTEL_EXPORTER_OTLP_TRACES_ENDPOINT 等）
+                      由根 pom 的 dev-bootstrap profile 注入：
+                        mvn spring-boot:run -pl gaia-bootstrap -am -P dev-bootstrap
+                    -->
+                    <mainClass>${spring-boot.run.mainClass}</mainClass>
+                    <jvmArguments>${spring-boot.jvmArguments}</jvmArguments>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -75,6 +75,23 @@ public class ActivityRepositoryImpl implements ActivityRepository {
         return activity;
     }
 
+    @Override
+    public List<Activity> findAll() {
+        QueryWrapper<ActivityPO> qw = new QueryWrapper<>();
+        qw.orderByDesc("id");
+        return mapper.selectList(qw).stream()
+                .map(ActivityRepositoryImpl::toEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        if (id == null) {
+            return;
+        }
+        mapper.deleteById(id);
+    }
+
     // ----------------------- PO ↔ Domain -----------------------
 
     static Activity toEntity(ActivityPO po) {

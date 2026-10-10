@@ -2,15 +2,27 @@
 target/
 *.jar
 !*-sources.jar
+*.war
+*.ear
 *.class
 
-# IDE
+# IDE - IntelliJ IDEA
 .idea/
 *.iml
-.vscode/
+*.iws
+*.ipr
+
+# IDE - Eclipse
 .project
 .classpath
 .settings/
+.factorypath
+.apt_generated/
+.springBeans
+bin/
+
+# IDE - VSCode
+.vscode/
 
 # OS
 .DS_Store
@@ -24,3 +36,15 @@ logs/
 .mvn/
 mvnw
 mvnw.cmd
+
+# Node / Frontend (top-level fallback; per-module .gitignore also applies)
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Misc build outputs
+*.tmp
+*.bak
+*.swp
+*.swo

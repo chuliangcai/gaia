@@ -1,6 +1,6 @@
 # =========================================================
-# test profile：K8s 集群部署（kind / staging / 生产）
-# Dubbo 注册中心 = Zookeeper（集群内 zookeeper:2181）
+# test profile：Docker Compose 部署（docker-compose.yml 同网络）
+# Dubbo 注册中心 = Zookeeper（docker-compose 服务名直接互通）
 # =========================================================
 
 # ===================== Dubbo（Zookeeper 注册中心，接口级订阅） =====================
@@ -11,9 +11,8 @@ dubbo:
     # Consumer 默认按 dubbo 协议发现；test 环境必须用 tri 才能与 Provider tri 20881 匹配
     protocol: tri
   registry:
-    # ZK 注册中心：跨 namespace 用完整 DNS 同名解析
-    # 同 namespace 也可简写为 zookeeper:2181
-    address: zookeeper://zookeeper.zookeeper.svc.cluster.local:2181?timeout=10000
+    # ZK 注册中心：docker-compose 同网络下用服务名 zookeeper 直接互通
+    address: zookeeper://zookeeper:2181?timeout=10000
   protocol:
     name: tri
     port: -1

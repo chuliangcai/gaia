@@ -1,9 +1,0 @@
-# =========================================================
-# dev profile：本地开发，Dubbo 不注册 / 不订阅（双 -Ddubbo.registry.register=false 跳过）
-# Dubbo 配置由 application.yml 提供，dev profile 仅覆盖日志级别
-# =========================================================
-
-logging:
-  level:
-    com.gaia: DEBUG
-    org.apache.dubbo: INFO
