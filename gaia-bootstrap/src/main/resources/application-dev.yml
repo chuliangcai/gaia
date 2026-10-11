@@ -7,7 +7,7 @@
 # ===================== 数据库 =====================
 spring:
   datasource:
-    # 所有业务（签到 / 夺宝）共用一个库 `gaia`，通过 MYSQL_DB 环境变量可整体切换。
+    # 所有业务（夺宝）共用一个库 `gaia`，通过 MYSQL_DB 环境变量可整体切换。
     url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/${MYSQL_DB:gaia}?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&allowMultiQueries=true&createDatabaseIfNotExist=true
     username: ${MYSQL_USER:root}
     password: ${MYSQL_PASSWORD:12345}
@@ -31,7 +31,7 @@ spring:
   sql:
     init:
       mode: always
-      # 加载全部库表（gaia 单库，包含签到+夺宝），全部 CREATE IF NOT EXISTS，启动幂等
+      # 加载全部库表（gaia 单库，包含夺宝相关表），全部 CREATE IF NOT EXISTS，启动幂等
       schema-locations: classpath:db/schema.sql
       continue-on-error: false
 

@@ -65,9 +65,7 @@ public class Result<T> implements Serializable {
         NOT_FOUND(404, "资源不存在"),
         CONFLICT(409, "资源冲突"),
         TOO_MANY_REQUESTS(429, "请求过于频繁"),
-        INTERNAL_ERROR(500, "系统繁忙，请稍后再试"),
-        SIGN_ALREADY(1001, "今日已签到"),
-        SIGN_LOCK_FAIL(1002, "签到处理中，请稍后重试");
+        INTERNAL_ERROR(500, "系统繁忙，请稍后再试");
 
         private final int code;
         private final String message;

@@ -32,6 +32,9 @@ public class Activity implements Serializable {
     /** 活动业务 code（wire 对外） */
     private String activityCode;
 
+    /** 玩法 code（{@code @BizProduct.code}），由后台管理必填。 */
+    private String bizCode;
+
     /** 活动名称 */
     private String name;
 
@@ -58,6 +61,16 @@ public class Activity implements Serializable {
 
     /** 乐观锁版本 */
     private Integer version;
+
+    /**
+     * 能力配置 JSON。
+     *
+     * <p>结构：{@code Map<configClassFqn, Object>} 序列化为 JSON 字符串。key 为
+     * {@code @Ability#configClass()} 的全限定类名（如
+     * {@code com.gaia.domain.ability.task.config.TaskConfig}），value 为该 FQN
+     * 对应配置类的实例 JSON。多个 task 类能力共用同一份内容。</p>
+     */
+    private String configurations;
 
     private LocalDateTime createTime;
     private LocalDateTime updateTime;

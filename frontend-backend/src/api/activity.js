@@ -42,12 +42,15 @@ function unwrap(res) {
 let MOCK = [
   {
     id: 1001,
+    activityCode: 'mock_treasure',
+    bizCode: 'treasure',
     name: '会员夺宝',
     coverUrl: '',
     link: '#/treasure/1001',
     startTime: '2026-01-01 00:00:00',
     endTime: '2026-12-31 23:59:59',
     status: 1,
+    configurations: {},
   },
 ];
 

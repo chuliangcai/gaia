@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * 后台管理进程健康检查（骨架阶段）。
  *
- * <p>仅用于验证进程可达，后续会替换为登录、用户管理、签到记录查询等接口。</p>
+ * <p>仅用于验证进程可达，后续会替换为登录、用户管理等接口。</p>
  */
 @RestController
 @RequestMapping("/api/admin")

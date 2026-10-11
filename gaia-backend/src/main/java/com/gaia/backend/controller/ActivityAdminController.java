@@ -3,7 +3,6 @@ package com.gaia.backend.controller;
 import com.gaia.backend.app.dto.ActivityCreateRequest;
 import com.gaia.backend.app.dto.ActivityUpdateRequest;
 import com.gaia.backend.app.dto.ActivityViewDTO;
-import com.gaia.backend.app.dto.TaskConfigDTO;
 import com.gaia.backend.app.service.ActivityAdminAppService;
 import com.gaia.common.dto.Result;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,7 +25,8 @@ import java.util.List;
  * <p>全部走 {@link ActivityAdminAppService}（gaia-backend 自带应用层），不再走 Dubbo：
  * <ul>
  *   <li>list / delete 由 AppService.listActivities / deleteActivity 完成</li>
- *   <li>create / update / configureTasks / triggerDraw 由 AppService 编排 domain 完成</li>
+ *   <li>create / update / triggerDraw 由 AppService 编排 domain 完成</li>
+ *   <li>能力配置（task_list / task_execute 等）走 Activity.configurations（key=configClass FQN），不再有独立 /tasks 端点</li>
  * </ul>
  * </p>
  */
@@ -65,13 +65,6 @@ public class ActivityAdminController {
     @Operation(summary = "删除活动")
     public Result<Void> delete(@PathVariable Long id) {
         activityAdminAppService.deleteActivity(id);
-        return Result.success();
-    }
-
-    @PutMapping("/{id}/tasks")
-    @Operation(summary = "配置任务清单（覆盖式）")
-    public Result<Void> configureTasks(@PathVariable Long id, @RequestBody List<TaskConfigDTO> tasks) {
-        activityAdminAppService.configureTasks(id, tasks);
         return Result.success();
     }
 

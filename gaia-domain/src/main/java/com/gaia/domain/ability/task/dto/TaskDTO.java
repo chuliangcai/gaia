@@ -1,4 +1,4 @@
-package com.gaia.backend.app.dto;
+package com.gaia.domain.ability.task.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,21 +8,25 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 
 /**
- * 任务配置 DTO（后台下发）。
+ * 任务 DTO。
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TaskConfigDTO implements Serializable {
+public class TaskDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    private Long id;
     private String taskCode;
     private String taskName;
     private String taskDesc;
     private Integer rewardCodes;
     private Integer maxExecutions;
+    private Integer executedCount;
+
+    /** 当前用户是否还可执行 */
+    private Boolean available;
     private Integer sortOrder;
-    private Integer status;
 }

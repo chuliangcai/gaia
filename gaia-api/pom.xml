@@ -12,7 +12,7 @@
 
     <artifactId>gaia-api</artifactId>
     <name>gaia-api</name>
-    <description>RPC 接口契约：sign / lottery</description>
+    <description>RPC 接口契约：lottery</description>
 
     <dependencies>
         <dependency>

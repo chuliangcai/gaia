@@ -59,6 +59,27 @@ public abstract class AbstractBaseAbility implements IAbility {
     }
 
     /**
+     * 同 {@link #reduceExecute(String, String, ExtensionCallback)}，但 bizCode 取自
+     * 运行时上下文（{@link RequestContext#getBizCode()}）。
+     *
+     * <p>domain 层能力实现应优先使用本重载，避免在领域代码中硬编码玩法 code。
+     * wire 上的玩法归属由 dispatcher / {@code RequestContext} 注入，领域层不应感知。</p>
+     *
+     * @param context       业务上下文
+     * @param extensionCode 扩展点 code
+     * @param callback      业务侧回调
+     */
+    public final <R, T extends IAbilityExt> R reduceExecute(
+            RequestContext context,
+            String extensionCode,
+            ExtensionCallback<T, R> callback) {
+        if (context == null) {
+            throw new IllegalArgumentException("context 不能为空");
+        }
+        return reduceExecute(context.getBizCode(), extensionCode, callback);
+    }
+
+    /**
      * 静态桥接器：让 {@link AbstractBaseAbility}（位于 gaia-common）能
      * 调用由容器（如 Spring）在运行时注册进来的查找函数。
      *

@@ -14,7 +14,7 @@ import java.util.Collections;
 /**
  * 基于 Redis 的分布式锁（SET NX + Lua 释放）。
  *
- * <p>用于签到场景下防止同一用户并发重入。</p>
+ * <p>通用分布式锁组件，被夺宝任务执行、开奖等场景用于防止同一用户并发重入。</p>
  *
  * <p>底层使用 {@link StringRedisTemplate}（Spring Data Redis + Lettuce），
  * 配合 Lettuce 的 Micrometer Tracing 集成自动产出 OpenTelemetry span，

@@ -1,4 +1,4 @@
-package com.gaia.app.treasure.ability;
+package com.gaia.domain.ability.treasure;
 
 import com.gaia.domain.base.activity.ActionType;
 import com.gaia.domain.base.activity.Activity;
@@ -6,12 +6,12 @@ import com.gaia.domain.base.activity.ActivityRecord;
 import com.gaia.domain.repository.ActivityRecordRepository;
 import com.gaia.domain.repository.ActivityRepository;
 import com.gaia.domain.repository.MemberBenefitRepository;
-import com.gaia.domain.ability.Ability;
+import com.gaia.iframework.annotation.Ability;
+import com.gaia.domain.ability.treasure.dto.DrawResultDTO;
+import com.gaia.domain.ability.treasure.dto.DrawWinnerDTO;
 import com.gaia.iframework.core.AbstractBaseAbility;
 import com.gaia.iframework.core.IFResult;
 import com.gaia.iframework.core.RequestContext;
-import com.gaia.app.treasure.dto.DrawResultDTO;
-import com.gaia.app.treasure.dto.DrawWinnerDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,6 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * 开奖查询 Ability（C 端只读）。

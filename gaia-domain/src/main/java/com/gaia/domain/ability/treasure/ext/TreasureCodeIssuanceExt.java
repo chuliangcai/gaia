@@ -1,4 +1,4 @@
-package com.gaia.app.treasure.ext;
+package com.gaia.domain.ability.treasure.ext;
 
 import com.gaia.iframework.annotation.AbilityExtension;
 import com.gaia.iframework.core.IAbilityExt;
@@ -14,8 +14,8 @@ import java.util.List;
  * 按 (bizCode, extCode) 取出后回调。</p>
  *
  * <p>v1 唯一实现位于
- * {@link TreasureBizProduct#issuance(Long, Long, int, Long)}，1:1 委托给
- * {@code com.gaia.app.treasure.service.TreasureCodeIssuer#issue(...)}。
+ * {@link com.gaia.app.treasure.ext.TreasureBizProduct#issuance(Long, Long, int, Long)}，
+ * 1:1 委托给 {@code com.gaia.app.treasure.service.TreasureCodeIssuer#issue(...)}。
  * 未来如需替换发放策略（例如 promo 专用路径或测试 fake），只需新增一个
  * {@code @Extension(code = "issuance")} 的方法实现，框架会按
  * {@code @BizProduct.code} + {@code @Extension.code} 严格匹配。</p>

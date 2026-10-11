@@ -21,6 +21,12 @@
             <artifactId>gaia-domain</artifactId>
         </dependency>
 
+        <!-- 元数据 RPC 契约：能力元数据由 gaia-api 暴露，backend 通过 AbilityMetaService 拉取 -->
+        <dependency>
+            <groupId>com.gaia</groupId>
+            <artifactId>gaia-api</artifactId>
+        </dependency>
+
         <!-- backend 把应用层 + 启动层放到一起，需要拿到 Repository 的实现 -->
         <dependency>
             <groupId>com.gaia</groupId>

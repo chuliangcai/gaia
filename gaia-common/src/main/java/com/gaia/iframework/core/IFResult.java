@@ -25,7 +25,7 @@ public class IFResult<T> implements Serializable {
     /** 业务是否成功 */
     private boolean success;
 
-    /** 业务消息码：成功时为 {@code null}，失败时携带原因（如 {@code SIGN_ALREADY}） */
+    /** 业务消息码：成功时为 {@code null}，失败时携带原因（如 {@code ACTIVITY_NOT_FOUND}） */
     private String msgCode;
 
     /** 业务数据 */

@@ -16,7 +16,7 @@ import java.util.List;
  * {@link com.gaia.app.framework.ExtensionRegistry#init()} 索引的 {@code @BizProduct} bean，
  * 承载该玩法下所有 {@code @Extension} 扩展点实现。</p>
  *
- * <p>v1 只提供 {@code "issuance"} 一个扩展点（{@link TreasureCodeIssuanceExt}），
+ * <p>v1 只提供 {@code "issuance"} 一个扩展点（{@link com.gaia.domain.ability.treasure.ext.TreasureCodeIssuanceExt}），
  * 1:1 委托给 {@link TreasureCodeIssuer#issue(Long, Long, int, Long)}；
  * 其他玩法内的关注点（如 draw 算法）当前仍由 service / scheduler 直接调用，
  * 待出现真实替代实现需求时再行抽象为扩展点。</p>
@@ -38,8 +38,8 @@ public class TreasureBizProduct {
      * 夺宝码发放扩展点实现。
      *
      * <p>{@code (bizCode="treasure", extCode="issuance")} → 本方法。
-     * 由 {@code AbstractBaseAbility.reduceExecute(...)} 在 {@link com.gaia.app.treasure.ability.TaskAbility}
-     * 中调用。</p>
+     * 由 {@code AbstractBaseAbility.reduceExecute(...)} 在
+     * {@link com.gaia.domain.ability.task.TaskExecuteAbility} 中调用。</p>
      */
     @Extension(code = "issuance", name = "夺宝码发放")
     public List<String> issuance(Long userId, Long activityId, int count, Long sourceId) {

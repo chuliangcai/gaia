@@ -20,6 +20,12 @@
             <artifactId>gaia-common</artifactId>
         </dependency>
 
+        <!-- RPC 契约：AbilityMetaService / AbilityDescriptor 由 gaia-api 暴露，domain 提供实现 -->
+        <dependency>
+            <groupId>com.gaia</groupId>
+            <artifactId>gaia-api</artifactId>
+        </dependency>
+
         <!-- Spring 注解支持：@Component / @Service / @Scheduled / @Transactional -->
         <dependency>
             <groupId>org.springframework</groupId>

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 /**
  * 活动管理后台列表 DTO。
@@ -24,10 +25,17 @@ public class ActivityViewDTO implements Serializable {
 
     private Long id;
     private String activityCode;
+
+    /** 玩法 code（@BizProduct.code）。 */
+    private String bizCode;
+
     private String name;
     private String coverUrl;
     private String link;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private Integer status;
+
+    /** 反序列化后的能力配置（key=configClass FQN）。 */
+    private Map<String, Object> configurations;
 }

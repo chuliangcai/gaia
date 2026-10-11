@@ -27,7 +27,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
         "com.gaia.api"
 })
 @MapperScan({
-        "com.gaia.app.mapper",       // gaia-app 内的 MyBatis Mapper
         "com.gaia.infra.persistence.mapper"  // gaia-infra 内的 MyBatis Mapper
 })
 @EnableDubbo(scanBasePackages = {"com.gaia.app"})

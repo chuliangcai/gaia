@@ -1,4 +1,4 @@
-package com.gaia.app.treasure.dto;
+package com.gaia.domain.ability.task.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

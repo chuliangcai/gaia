@@ -4,6 +4,7 @@ package com.gaia.iframework.core;
  * 扩展点回调。
  *
  * <p>用于 {@link AbstractBaseAbility#reduceExecute(String, String, ExtensionCallback)}
+ * 或 {@link AbstractBaseAbility#reduceExecute(RequestContext, String, ExtensionCallback)}
  * 中，业务侧传入 lambda 在拿到的扩展实例上做处理。</p>
  *
  * @param <T> 扩展点类型，必须继承 {@link IAbilityExt}

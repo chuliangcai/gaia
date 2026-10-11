@@ -108,6 +108,12 @@ export default function ActivityList() {
       ellipsis: true,
     },
     {
+      title: '玩法',
+      dataIndex: 'bizCode',
+      width: 120,
+      render: (v) => (v ? <Tag color="purple">{v}</Tag> : <span style={{ color: '#bbb' }}>—</span>),
+    },
+    {
       title: '跳转链接',
       dataIndex: 'link',
       ellipsis: true,

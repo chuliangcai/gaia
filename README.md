@@ -23,7 +23,7 @@
 gaia/
 ├── pom.xml                           # 父 POM
 ├── gaia-common/                      # Result / DateUtils / RedisKeys
-├── gaia-api/                         # RPC 接口契约：sign / lottery / activity
+├── gaia-api/                         # RPC 接口契约：lottery / activity
 ├── gaia-domain/                      # DDD 领域层（Entity / Repository 接口）
 ├── gaia-app/                         # 应用层：@DubboService / @Service / Mapper / Entity
 ├── gaia-infra/                       # DDD 基础设施层（Mapper / Repository 实现）
@@ -110,7 +110,7 @@ cd frontend-backend && pnpm install && pnpm dev    # http://localhost:5174
 ```bash
 # 玩法统一入口（新版，gaia-gateway HTTP 端口 = 8090）
 curl -XPOST 'http://localhost:8090/api/interact' -H 'Content-Type: application/json' \
-  -d '{"bizCode":"sign","userId":1001,"models":[{"assertType":"sign_do","subType":""}]}'
+  -d '{"bizCode":"treasure","userId":1001,"models":[{"assertType":"treasure_task","subType":"list"}]}'
 
 # Prometheus 指标（gaia-gateway）
 curl 'http://localhost:8090/actuator/prometheus'

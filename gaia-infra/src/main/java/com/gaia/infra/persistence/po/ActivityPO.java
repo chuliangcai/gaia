@@ -23,6 +23,10 @@ public class ActivityPO implements Serializable {
     private Long id;
 
     private String activityCode;
+
+    /** 玩法 code（@BizProduct.code） */
+    private String bizCode;
+
     private String name;
     private String prizeDesc;
     private String prizeImgUrl;
@@ -37,6 +41,9 @@ public class ActivityPO implements Serializable {
 
     @Version
     private Integer version;
+
+    /** 能力配置 JSON；key=configClass FQN，value=该类配置对象 */
+    private String configurations;
 
     private LocalDateTime createTime;
     private LocalDateTime updateTime;

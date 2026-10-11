@@ -1,6 +1,6 @@
 package com.gaia.app.framework;
 
-import com.gaia.domain.ability.Ability;
+import com.gaia.iframework.annotation.Ability;
 import com.gaia.iframework.core.GatewayMtopRequest;
 import com.gaia.iframework.core.IFResult;
 import com.gaia.iframework.core.IAbility;

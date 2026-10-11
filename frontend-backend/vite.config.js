@@ -10,6 +10,11 @@ export default defineConfig({
     port: 5174,
     open: false,
     proxy: {
+      // games 元数据接口走 gaia-bootstrap（8091）— gaia-backend 不依赖 gaia-app，扫不到 @BizProduct
+      '/api/admin/meta/games': {
+        target: 'http://127.0.0.1:8091',
+        changeOrigin: true,
+      },
       '/api': {
         target: 'http://127.0.0.1:8092',
         changeOrigin: true,

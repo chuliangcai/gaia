@@ -1,35 +1,22 @@
 -- ==========================================
 -- Gaia 服务全部库表结构（MySQL 8.0）
---   - 单库 `gaia`：签到 + 会员夺宝 物理合并
+--   - 单库 `gaia`：会员夺宝相关表
 --
 -- 全部使用 CREATE ... IF NOT EXISTS，无 DROP，启动幂等。
 -- 用法: mysql -h127.0.0.1 -uroot -p12345 < schema.sql
 -- ==========================================
 
 -- ----------------------------------------------------------
--- 库: gaia (签到 + 会员夺宝)
+-- 库: gaia (会员夺宝)
 -- ----------------------------------------------------------
 CREATE DATABASE IF NOT EXISTS `gaia` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE `gaia`;
-
-CREATE TABLE IF NOT EXISTS `user_sign_record` (
-    `id`            BIGINT          NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `user_id`       BIGINT          NOT NULL COMMENT '用户ID',
-    `sign_date`     VARCHAR(16)     NOT NULL COMMENT '签到日期 yyyy-MM-dd',
-    `year_month`    VARCHAR(8)      NOT NULL COMMENT '年月 yyyyMM',
-    `reward_points` BIGINT          NOT NULL DEFAULT 0 COMMENT '当次奖励积分',
-    `streak_days`   INT             NOT NULL DEFAULT 0 COMMENT '连续天数',
-    `create_time`   DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `update_time`   DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_user_date` (`user_id`, `sign_date`),
-    KEY `idx_user_ym` (`user_id`, `year_month`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户签到记录';
 
 -- 活动主表
 CREATE TABLE IF NOT EXISTS `gaia_activity` (
     `id`              BIGINT          NOT NULL AUTO_INCREMENT COMMENT '主键',
     `activity_code`   VARCHAR(64)     NOT NULL COMMENT '活动业务 code (wire 上对外)',
+    `biz_code`        VARCHAR(64)     NOT NULL DEFAULT '' COMMENT '玩法 code（@BizProduct.code）',
     `name`            VARCHAR(128)    NOT NULL COMMENT '活动名称',
     `prize_desc`      VARCHAR(512)    NOT NULL DEFAULT '' COMMENT '奖品描述',
     `prize_img_url`   VARCHAR(512)    NOT NULL DEFAULT '' COMMENT '奖品图片 URL',
@@ -39,31 +26,27 @@ CREATE TABLE IF NOT EXISTS `gaia_activity` (
     `winner_count`    INT             NOT NULL DEFAULT 1 COMMENT '中奖人数',
     `draw_at`         DATETIME        DEFAULT NULL COMMENT '实际开奖时间',
     `version`         INT             NOT NULL DEFAULT 0 COMMENT '乐观锁',
+    `configurations`  TEXT            DEFAULT NULL COMMENT '能力配置 JSON；key=configClass FQN，value=该类配置对象',
     `create_time`     DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `update_time`     DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_activity_code` (`activity_code`),
+    KEY `idx_biz_code` (`biz_code`),
     KEY `idx_status_end` (`status`, `end_time`),
     KEY `idx_status_start` (`status`, `start_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='活动主表';
 
--- 活动任务配置
-CREATE TABLE IF NOT EXISTS `gaia_activity_task` (
-    `id`              BIGINT          NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `activity_id`     BIGINT          NOT NULL COMMENT '活动 ID',
-    `task_code`       VARCHAR(64)     NOT NULL COMMENT '任务 code (SHARE/FOLLOW/...)',
-    `task_name`       VARCHAR(128)    NOT NULL COMMENT '任务名',
-    `task_desc`       VARCHAR(255)    NOT NULL DEFAULT '' COMMENT '任务描述',
-    `reward_codes`    INT             NOT NULL DEFAULT 1 COMMENT '每执行一次发放几个夺宝码',
-    `max_executions`  INT             NOT NULL DEFAULT 1 COMMENT '单用户最多执行次数',
-    `sort_order`      INT             NOT NULL DEFAULT 0 COMMENT '展示顺序',
-    `status`          TINYINT         NOT NULL DEFAULT 1 COMMENT '0=禁用,1=启用',
-    `create_time`     DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `update_time`     DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_activity_task_code` (`activity_id`, `task_code`),
-    KEY `idx_activity` (`activity_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='活动任务配置';
+-- 老库兼容：gaia_activity 若缺 configurations 列则补上（幂等；新装库 CREATE TABLE 已包含该列，本分支不会执行）
+SET @col := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'gaia_activity' AND COLUMN_NAME = 'configurations');
+SET @sql := IF(@col = 0,
+               CONCAT('ALTER TABLE gaia_activity ADD COLUMN configurations TEXT DEFAULT NULL COMMENT ',
+                      CHAR(39), '能力配置 JSON；key=configClass FQN，value=该类配置对象', CHAR(39),
+                      ' AFTER version'),
+               'DO 0');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- 活动明细表 (事件流 + 幂等键)
 CREATE TABLE IF NOT EXISTS `gaia_activity_record` (

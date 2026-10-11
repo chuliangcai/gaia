@@ -12,9 +12,9 @@ import java.lang.annotation.Target;
  * {@link com.gaia.iframework.core.IAbilityExt}），
  * 框架以此作为扩展实现的契约查找依据。</p>
  *
- * <p>注意：能力元数据 {@code @Ability} 已下沉到领域层
- * （{@code com.gaia.domain.ability.Ability}），本注解作为玩法层扩展点仍
- * 保留在通用框架层。</p>
+ * <p>注意：{@code @Ability} 与本注解同层（{@code com.gaia.iframework.annotation}），
+ * 本注解仅用于标记玩法内的扩展点接口；能力元数据 {@code @Ability} 由框架扫描并
+ * 注册到能力索引。</p>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

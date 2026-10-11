@@ -101,6 +101,7 @@ public class ActivityRepositoryImpl implements ActivityRepository {
         return Activity.builder()
                 .id(po.getId())
                 .activityCode(po.getActivityCode())
+                .bizCode(po.getBizCode())
                 .name(po.getName())
                 .prizeDesc(po.getPrizeDesc())
                 .prizeImgUrl(po.getPrizeImgUrl())
@@ -110,6 +111,7 @@ public class ActivityRepositoryImpl implements ActivityRepository {
                 .winnerCount(po.getWinnerCount())
                 .drawAt(po.getDrawAt())
                 .version(po.getVersion())
+                .configurations(po.getConfigurations())
                 .createTime(po.getCreateTime())
                 .updateTime(po.getUpdateTime())
                 .build();
@@ -122,6 +124,7 @@ public class ActivityRepositoryImpl implements ActivityRepository {
         ActivityPO po = new ActivityPO();
         po.setId(e.getId());
         po.setActivityCode(e.getActivityCode());
+        po.setBizCode(e.getBizCode());
         po.setName(e.getName());
         po.setPrizeDesc(e.getPrizeDesc());
         po.setPrizeImgUrl(e.getPrizeImgUrl());
@@ -131,6 +134,7 @@ public class ActivityRepositoryImpl implements ActivityRepository {
         po.setWinnerCount(e.getWinnerCount());
         po.setDrawAt(e.getDrawAt());
         po.setVersion(e.getVersion());
+        po.setConfigurations(e.getConfigurations());
         po.setCreateTime(e.getCreateTime());
         po.setUpdateTime(e.getUpdateTime());
         return po;
