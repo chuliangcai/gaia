@@ -28,13 +28,6 @@ public class ActivityRepositoryImpl implements ActivityRepository {
     }
 
     @Override
-    public Optional<Activity> findByCode(String activityCode) {
-        QueryWrapper<ActivityPO> qw = new QueryWrapper<>();
-        qw.eq("activity_code", activityCode);
-        return Optional.ofNullable(mapper.selectOne(qw)).map(ActivityRepositoryImpl::toEntity);
-    }
-
-    @Override
     public List<Activity> findStartingAt(LocalDateTime now) {
         QueryWrapper<ActivityPO> qw = new QueryWrapper<>();
         qw.eq("status", 0).le("start_time", now);
@@ -100,16 +93,11 @@ public class ActivityRepositoryImpl implements ActivityRepository {
         }
         return Activity.builder()
                 .id(po.getId())
-                .activityCode(po.getActivityCode())
                 .bizCode(po.getBizCode())
                 .name(po.getName())
-                .prizeDesc(po.getPrizeDesc())
-                .prizeImgUrl(po.getPrizeImgUrl())
                 .startTime(po.getStartTime())
                 .endTime(po.getEndTime())
                 .status(po.getStatus())
-                .winnerCount(po.getWinnerCount())
-                .drawAt(po.getDrawAt())
                 .version(po.getVersion())
                 .configurations(po.getConfigurations())
                 .createTime(po.getCreateTime())
@@ -123,16 +111,11 @@ public class ActivityRepositoryImpl implements ActivityRepository {
         }
         ActivityPO po = new ActivityPO();
         po.setId(e.getId());
-        po.setActivityCode(e.getActivityCode());
         po.setBizCode(e.getBizCode());
         po.setName(e.getName());
-        po.setPrizeDesc(e.getPrizeDesc());
-        po.setPrizeImgUrl(e.getPrizeImgUrl());
         po.setStartTime(e.getStartTime());
         po.setEndTime(e.getEndTime());
         po.setStatus(e.getStatus());
-        po.setWinnerCount(e.getWinnerCount());
-        po.setDrawAt(e.getDrawAt());
         po.setVersion(e.getVersion());
         po.setConfigurations(e.getConfigurations());
         po.setCreateTime(e.getCreateTime());

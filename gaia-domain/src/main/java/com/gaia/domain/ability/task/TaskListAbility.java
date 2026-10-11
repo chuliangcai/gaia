@@ -30,7 +30,7 @@ import java.util.Optional;
  * 反射调用同名 processor 方法（每个处理器名对应一个签名匹配的方法）：</p>
  * <ol>
  *     <li>{@link #preCheck(RequestContext) preCheck} —
- *     解析入参（activityCode），按 code 加载 {@link Activity}。</li>
+ *     解析入参（activityId），按 id 加载 {@link Activity}。</li>
  *     <li>{@link #loadConfig(RequestContext) loadConfig} —
  *     从 {@link Activity#getConfigurations()} 反序列化 {@link TaskConfig}，
  *     得到任务列表。</li>
@@ -70,7 +70,7 @@ public class TaskListAbility extends AbstractBaseAbility {
     // ---------------------- processor 实现 ----------------------
 
     /**
-     * 前置校验：解析入参（activityCode）、按 code 加载 {@link Activity}。
+     * 前置校验：解析入参（activityId）、按 id 加载 {@link Activity}。
      * 校验失败时短路返回对应 msgCode。
      */
     IFResult<List<TaskDTO>> preCheck(RequestContext context) {
@@ -131,17 +131,23 @@ public class TaskListAbility extends AbstractBaseAbility {
     // ---------------------- 入参解析 ----------------------
 
     /**
-     * 从 {@link RequestContext} 解析入参，按 activityCode 加载 {@link Activity}。
+     * 从 {@link RequestContext} 解析入参，按 activityId 加载 {@link Activity}。
      * 校验失败时 {@link ExecutionContext#errorMsgCode} 非空；其它字段可能未填充。
      */
     ExecutionContext resolveContext(RequestContext context) {
         Long userId = context.getUserId();
         Map<String, String> ext = context.getExtParams();
-        String activityCode = ext == null ? null : ext.get("activityCode");
-        if (activityCode == null || activityCode.isBlank()) {
-            return ExecutionContext.fail("ACTIVITY_CODE_REQUIRED");
+        String rawId = ext == null ? null : ext.get("activityId");
+        if (rawId == null || rawId.isBlank()) {
+            return ExecutionContext.fail("ACTIVITY_ID_REQUIRED");
         }
-        Optional<Activity> opt = activityRepository.findByCode(activityCode);
+        Long activityId;
+        try {
+            activityId = Long.parseLong(rawId.trim());
+        } catch (NumberFormatException e) {
+            return ExecutionContext.fail("ACTIVITY_ID_INVALID");
+        }
+        Optional<Activity> opt = activityRepository.findById(activityId);
         if (opt.isEmpty()) {
             return ExecutionContext.fail("ACTIVITY_NOT_FOUND");
         }

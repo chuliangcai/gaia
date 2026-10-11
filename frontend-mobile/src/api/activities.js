@@ -6,7 +6,7 @@ import { http } from './client.js';
  * 契约（gateway → server）：
  *   GET /api/activities
  *     -> { code, message, data: Activity[] }
- *   其中 Activity = { id, activityCode, name, coverUrl, link, startTime, endTime, status }
+ *   其中 Activity = { id, name, link, startTime, endTime, status }
  *   status: 0=草稿 1=已上架 2=已下架
  *
  * 兼容：当后端暂未提供 /api/activities 时，getActivities 会回退到内置的占位数据，
@@ -16,9 +16,7 @@ import { http } from './client.js';
 const PLACEHOLDER = [
   {
     id: 1001,
-    activityCode: 'treasure_2026q4',
     name: '会员夺宝',
-    coverUrl: '',
     link: '/treasure/1001',
     startTime: '2026-01-01 00:00:00',
     endTime: '2026-12-31 23:59:59',

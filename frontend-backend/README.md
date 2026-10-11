@@ -56,7 +56,7 @@ pnpm dev          # http://localhost:5174
 | DELETE | `/api/admin/activity/:id`         | 删除活动    |
 | POST   | `/api/admin/activity/:id/draw`    | 手动开奖    |
 
-字段：id, name, coverUrl, link, startTime, endTime, status(`0` 草稿 / `1` 上架 / `2` 下架)
+字段：id, name, link, startTime, endTime, status(`0` 草稿 / `1` 上架 / `2` 下架)
 
 后端暂未提供上述路径时，前端会自动使用内置内存 mock 数据，**保证后台能跑通演示**。后端就绪后会自动切换到真实接口，无需改 UI 代码。
 

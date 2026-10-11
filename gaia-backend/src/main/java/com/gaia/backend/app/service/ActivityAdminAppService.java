@@ -35,26 +35,22 @@ public class ActivityAdminAppService {
     private final ObjectMapper objectMapper;
 
     public Long createActivity(ActivityCreateRequest req) {
-        if (req == null || req.getActivityCode() == null) {
-            throw new IllegalArgumentException("activityCode 必填");
+        if (req == null) {
+            throw new IllegalArgumentException("req 必填");
         }
         if (req.getBizCode() == null || req.getBizCode().isBlank()) {
             throw new IllegalArgumentException("bizCode 必填");
         }
         Activity a = Activity.builder()
-                .activityCode(req.getActivityCode())
                 .bizCode(req.getBizCode())
                 .name(req.getName())
-                .prizeDesc(req.getPrizeDesc() == null ? "" : req.getPrizeDesc())
-                .prizeImgUrl(req.getPrizeImgUrl() == null ? "" : req.getPrizeImgUrl())
                 .startTime(req.getStartTime())
                 .endTime(req.getEndTime())
                 .status(0)
-                .winnerCount(req.getWinnerCount() == null ? 1 : req.getWinnerCount())
                 .configurations(serializeConfig(req.getConfigurations()))
                 .build();
         Activity saved = activityRepository.save(a);
-        log.info("创建活动 id={} code={} bizCode={}", saved.getId(), saved.getActivityCode(), saved.getBizCode());
+        log.info("创建活动 id={} bizCode={}", saved.getId(), saved.getBizCode());
         return saved.getId();
     }
 
@@ -65,11 +61,8 @@ public class ActivityAdminAppService {
         Activity a = activityRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("活动不存在 id=" + id));
         if (req.getName() != null)        a.setName(req.getName());
-        if (req.getPrizeDesc() != null)   a.setPrizeDesc(req.getPrizeDesc());
-        if (req.getPrizeImgUrl() != null) a.setPrizeImgUrl(req.getPrizeImgUrl());
         if (req.getStartTime() != null)   a.setStartTime(req.getStartTime());
         if (req.getEndTime() != null)     a.setEndTime(req.getEndTime());
-        if (req.getWinnerCount() != null) a.setWinnerCount(req.getWinnerCount());
         if (req.getBizCode() != null && !req.getBizCode().isBlank()) a.setBizCode(req.getBizCode());
         if (req.getConfigurations() != null) {
             a.setConfigurations(serializeConfig(req.getConfigurations()));
@@ -109,11 +102,9 @@ public class ActivityAdminAppService {
         }
         return ActivityViewDTO.builder()
                 .id(a.getId())
-                .activityCode(a.getActivityCode())
                 .bizCode(a.getBizCode())
                 .name(a.getName())
-                .coverUrl(a.getPrizeImgUrl() == null ? "" : a.getPrizeImgUrl())
-                .link(a.getActivityCode() == null ? "" : ("#/treasure/" + a.getId()))
+                .link("#/treasure/" + a.getId())
                 .startTime(a.getStartTime())
                 .endTime(a.getEndTime())
                 .status(viewStatus)

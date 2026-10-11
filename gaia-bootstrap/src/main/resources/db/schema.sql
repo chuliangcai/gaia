@@ -15,22 +15,16 @@ USE `gaia`;
 -- 活动主表
 CREATE TABLE IF NOT EXISTS `gaia_activity` (
     `id`              BIGINT          NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `activity_code`   VARCHAR(64)     NOT NULL COMMENT '活动业务 code (wire 上对外)',
     `biz_code`        VARCHAR(64)     NOT NULL DEFAULT '' COMMENT '玩法 code（@BizProduct.code）',
     `name`            VARCHAR(128)    NOT NULL COMMENT '活动名称',
-    `prize_desc`      VARCHAR(512)    NOT NULL DEFAULT '' COMMENT '奖品描述',
-    `prize_img_url`   VARCHAR(512)    NOT NULL DEFAULT '' COMMENT '奖品图片 URL',
     `start_time`      DATETIME        NOT NULL COMMENT '活动开始时间',
     `end_time`        DATETIME        NOT NULL COMMENT '活动结束时间',
     `status`          TINYINT         NOT NULL DEFAULT 0 COMMENT '0=未开始,1=进行中,2=待开奖,3=已开奖',
-    `winner_count`    INT             NOT NULL DEFAULT 1 COMMENT '中奖人数',
-    `draw_at`         DATETIME        DEFAULT NULL COMMENT '实际开奖时间',
     `version`         INT             NOT NULL DEFAULT 0 COMMENT '乐观锁',
     `configurations`  TEXT            DEFAULT NULL COMMENT '能力配置 JSON；key=configClass FQN，value=该类配置对象',
     `create_time`     DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `update_time`     DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_activity_code` (`activity_code`),
     KEY `idx_biz_code` (`biz_code`),
     KEY `idx_status_end` (`status`, `end_time`),
     KEY `idx_status_start` (`status`, `start_time`)

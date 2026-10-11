@@ -109,7 +109,8 @@ public class DrawService {
             activityRecordRepository.insertIfAbsent(rec);
             return;
         }
-        int winnerCount = activity.getWinnerCount() == null ? 1 : activity.getWinnerCount();
+        // TODO 暂时不考虑开奖：winnerCount 待重新接入（从玩法/配置/参数等侧决定）
+        int winnerCount = 1;
         List<DrawWinner> winners = drawAlgorithm.draw(candidates, winnerCount);
         log.info("活动开奖候选数={} 中奖数={} activityId={}", candidates.size(), winners.size(), activityId);
 

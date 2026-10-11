@@ -33,7 +33,7 @@ public class ActivityStatusRefresher {
             try {
                 a.markOngoing();
                 activityRepository.save(a);
-                log.info("活动推进 0→1 activityId={} code={}", a.getId(), a.getActivityCode());
+                log.info("活动推进 0→1 activityId={}", a.getId());
             } catch (Exception e) {
                 log.warn("活动状态推进 0→1 失败 id={}", a.getId(), e);
             }
@@ -44,7 +44,7 @@ public class ActivityStatusRefresher {
             try {
                 a.markWaitingDraw();
                 activityRepository.save(a);
-                log.info("活动推进 1→2 activityId={} code={}", a.getId(), a.getActivityCode());
+                log.info("活动推进 1→2 activityId={}", a.getId());
             } catch (Exception e) {
                 log.warn("活动状态推进 1→2 失败 id={}", a.getId(), e);
             }

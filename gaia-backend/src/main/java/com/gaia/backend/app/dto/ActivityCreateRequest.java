@@ -20,17 +20,12 @@ public class ActivityCreateRequest implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private String activityCode;
-
     /** 玩法 code（@BizProduct.code），必填（service 层校验）。 */
     private String bizCode;
 
     private String name;
-    private String prizeDesc;
-    private String prizeImgUrl;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-    private Integer winnerCount;
 
     /**
      * 能力配置；key=configClass FQN（如

@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -107,7 +108,7 @@ public class DrawAbility extends AbstractBaseAbility {
         return IFResult.success(DrawResultDTO.builder()
                 .activityId(activityId)
                 .status(activity.getStatus())
-                .drawAt(activity.getDrawAt())
+                .drawAt(LocalDateTime.now())
                 .winners(winners)
                 .build());
     }
@@ -149,7 +150,7 @@ public class DrawAbility extends AbstractBaseAbility {
         return IFResult.success(DrawResultDTO.builder()
                 .activityId(activityId)
                 .status(activity.getStatus())
-                .drawAt(activity.getDrawAt())
+                .drawAt(LocalDateTime.now())
                 .winners(winners)
                 .build());
     }

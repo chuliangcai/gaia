@@ -29,20 +29,11 @@ public class Activity implements Serializable {
     /** 主键 */
     private Long id;
 
-    /** 活动业务 code（wire 对外） */
-    private String activityCode;
-
     /** 玩法 code（{@code @BizProduct.code}），由后台管理必填。 */
     private String bizCode;
 
     /** 活动名称 */
     private String name;
-
-    /** 奖品描述 */
-    private String prizeDesc;
-
-    /** 奖品图片 */
-    private String prizeImgUrl;
 
     /** 开始时间 */
     private LocalDateTime startTime;
@@ -52,12 +43,6 @@ public class Activity implements Serializable {
 
     /** 状态：0=未开始,1=进行中,2=待开奖,3=已开奖 */
     private Integer status;
-
-    /** 中奖人数 */
-    private Integer winnerCount;
-
-    /** 实际开奖时间 */
-    private LocalDateTime drawAt;
 
     /** 乐观锁版本 */
     private Integer version;
@@ -110,6 +95,5 @@ public class Activity implements Serializable {
      */
     public void markDrawn() {
         this.status = ActivityStatus.DRAWN.code();
-        this.drawAt = LocalDateTime.now();
     }
 }

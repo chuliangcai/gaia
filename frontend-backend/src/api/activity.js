@@ -10,7 +10,7 @@ import axios from 'axios';
  *   DELETE /api/admin/activity/:id       删除活动
  *   POST   /api/admin/activity/:id/draw  手动开奖（保留）
  *
- * 字段：id, name, coverUrl, link, startTime, endTime, status(0=草稿 1=上架 2=下架)
+ * 字段：id, name, link, startTime, endTime, status(0=草稿 1=上架 2=下架)
  */
 
 const http = axios.create({
@@ -42,10 +42,8 @@ function unwrap(res) {
 let MOCK = [
   {
     id: 1001,
-    activityCode: 'mock_treasure',
     bizCode: 'treasure',
     name: '会员夺宝',
-    coverUrl: '',
     link: '#/treasure/1001',
     startTime: '2026-01-01 00:00:00',
     endTime: '2026-12-31 23:59:59',

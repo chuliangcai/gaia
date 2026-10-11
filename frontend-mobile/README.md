@@ -72,7 +72,7 @@ GET /api/activities
 {
   code: 0,
   data: [
-    { id, activityCode, name, coverUrl, link, startTime, endTime, status },
+    { id, name, link, startTime, endTime, status },
     ...
   ]
 }

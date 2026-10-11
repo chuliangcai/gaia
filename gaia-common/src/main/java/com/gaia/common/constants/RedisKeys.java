@@ -27,8 +27,8 @@ public final class RedisKeys {
     /** 夺宝活动开奖防并发锁，{activityId} */
     public static final String TREASURE_DRAW_LOCK_KEY = NAMESPACE + ":treasure:draw:lock:{activityId}";
 
-    /** 活动基本信息缓存，{activityCode}（TTL 60s） */
-    public static final String TREASURE_ACTIVITY_INFO_KEY = NAMESPACE + ":treasure:activity:info:{activityCode}";
+    /** 活动基本信息缓存，{activityId}（TTL 60s） */
+    public static final String TREASURE_ACTIVITY_INFO_KEY = NAMESPACE + ":treasure:activity:info:{activityId}";
 
     /** 用户夺宝码缓存（按用户），{userId}:{activityId} */
     public static final String TREASURE_USER_CODES_KEY = NAMESPACE + ":treasure:user:codes:{userId}:{activityId}";

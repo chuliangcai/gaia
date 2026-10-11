@@ -1,7 +1,6 @@
 package com.gaia.infra.persistence.po;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.Version;
@@ -22,22 +21,15 @@ public class ActivityPO implements Serializable {
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    private String activityCode;
-
     /** 玩法 code（@BizProduct.code） */
     private String bizCode;
 
     private String name;
-    private String prizeDesc;
-    private String prizeImgUrl;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
 
     /** 0=未开始,1=进行中,2=待开奖,3=已开奖 */
     private Integer status;
-
-    private Integer winnerCount;
-    private LocalDateTime drawAt;
 
     @Version
     private Integer version;

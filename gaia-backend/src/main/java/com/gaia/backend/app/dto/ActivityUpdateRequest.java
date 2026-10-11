@@ -21,11 +21,8 @@ public class ActivityUpdateRequest implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String name;
-    private String prizeDesc;
-    private String prizeImgUrl;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-    private Integer winnerCount;
 
     /**
      * 玩法 code（@BizProduct.code）；null 表示不变。

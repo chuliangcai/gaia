@@ -13,8 +13,6 @@ public interface ActivityRepository {
 
     Optional<Activity> findById(Long id);
 
-    Optional<Activity> findByCode(String activityCode);
-
     /**
      * 全量列表（后台管理用，按 id 倒序）。
      */
