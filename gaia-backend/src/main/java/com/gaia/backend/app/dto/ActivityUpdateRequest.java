@@ -25,6 +25,12 @@ public class ActivityUpdateRequest implements Serializable {
     private LocalDateTime endTime;
 
     /**
+     * 后台 UI 状态：0=草稿 1=上架 2=下架。null 表示不变。
+     * service 层映射成领域状态机：0→0 NOT_STARTED，1→1 ONGOING，2→3 DRAWN。
+     */
+    private Integer status;
+
+    /**
      * 玩法 code（@BizProduct.code）；null 表示不变。
      */
     private String bizCode;

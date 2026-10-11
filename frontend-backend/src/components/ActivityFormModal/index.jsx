@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Modal, Form, Input, DatePicker, Select, Checkbox, Tag, Empty } from 'antd';
+import { Modal, Form, Input, DatePicker, Select, Checkbox, Tag, Empty, message } from 'antd';
 import dayjs from 'dayjs';
 import { STATUS_OPTIONS } from '../../api/activity.js';
 import { listGames, listAbilities } from '../../api/meta.js';
@@ -57,11 +57,24 @@ export default function ActivityFormModal({ open, initial, onCancel, onSubmit })
     if (!open) return;
     if (initial) {
       const cfg = initial.configurations || {};
-      const classNames = new Set(Object.keys(cfg));
-      // 反推启用哪些 ability code：只要该 ability 的 configClassName 在 cfg 中
-      const codes = (abilities || [])
-        .filter((a) => classNames.has(a.configClassName))
-        .map((a) => a.code);
+      // 优先用表单显式写入的 ability 编码集合（覆盖 Void-config ability
+      // 不留 configurations 痕迹、无法反推的情况）。__ 前缀视为本表单私有元数据。
+      let codes;
+      if (Array.isArray(cfg.__abilityCodes__)) {
+        codes = cfg.__abilityCodes__.filter((c) => typeof c === 'string');
+      } else {
+        // 兼容旧数据：仅按 configClassName 反推
+        const classNames = new Set(
+          Object.keys(cfg).filter((k) => !k.startsWith('__')),
+        );
+        codes = (abilities || [])
+          .filter((a) => classNames.has(a.configClassName))
+          .map((a) => a.code);
+      }
+      // 回填时剔除私有元数据，避免子表单误把它当 schema 渲染
+      const abilityConfigs = Object.fromEntries(
+        Object.entries(cfg).filter(([k]) => !k.startsWith('__')),
+      );
       form.setFieldsValue({
         name: initial.name,
         coverUrl: initial.coverUrl,
@@ -73,7 +86,7 @@ export default function ActivityFormModal({ open, initial, onCancel, onSubmit })
         status: initial.status,
         bizCode: initial.bizCode || undefined,
         abilities: codes,
-        abilityConfigs: cfg,
+        abilityConfigs,
       });
     } else {
       form.resetFields();
@@ -129,11 +142,25 @@ export default function ActivityFormModal({ open, initial, onCancel, onSubmit })
   };
 
   const handleOk = async () => {
-    const values = await form.validateFields();
+    let values;
+    try {
+      values = await form.validateFields();
+    } catch (e) {
+      // 表单校验失败时弹 toast 让用户看到原因（Antd 仅在字段下方画红框，
+      // 弹窗顶部没有视觉提示，容易让人误以为"点保存没反应"）
+      const firstFieldErr = e?.errorFields?.[0]?.errors?.[0];
+      message.error(firstFieldErr || '请检查表单填写');
+      throw e; // re-throw 让 Modal 保持打开 + 退出 loading
+    }
     const [start, end] = values.timeRange || [];
 
     // 把 abilityConfigs 里所有 dayjs 转成字符串（避免 Jackson 收到 dayjs 实例）
     const configurations = stringifyDates(values.abilityConfigs || {});
+    // 把选中的 ability code 列表一起序列化进 configurations（用 __ 前缀避开
+    // 与 configClass FQN key 的命名冲突）。Void-config ability
+    // （如 treasure_draw，configClassName=java.lang.Void）不会在 configurations
+    // 留任何痕迹，存下编码后才能在编辑时正确回填。
+    configurations.__abilityCodes__ = selectedCodes;
 
     const payload = {
       activityCode: initial?.activityCode,

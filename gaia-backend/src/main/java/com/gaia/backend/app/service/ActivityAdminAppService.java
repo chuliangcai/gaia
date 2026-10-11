@@ -46,11 +46,12 @@ public class ActivityAdminAppService {
                 .name(req.getName())
                 .startTime(req.getStartTime())
                 .endTime(req.getEndTime())
-                .status(0)
+                // UI status（0/1/2）→ 领域状态机（0/1/3）；null 时落默认 0 草稿
+                .status(req.getStatus() != null ? mapFormStatusToDomain(req.getStatus()) : 0)
                 .configurations(serializeConfig(req.getConfigurations()))
                 .build();
         Activity saved = activityRepository.save(a);
-        log.info("创建活动 id={} bizCode={}", saved.getId(), saved.getBizCode());
+        log.info("创建活动 id={} bizCode={} status={}", saved.getId(), saved.getBizCode(), saved.getStatus());
         return saved.getId();
     }
 
@@ -64,11 +65,12 @@ public class ActivityAdminAppService {
         if (req.getStartTime() != null)   a.setStartTime(req.getStartTime());
         if (req.getEndTime() != null)     a.setEndTime(req.getEndTime());
         if (req.getBizCode() != null && !req.getBizCode().isBlank()) a.setBizCode(req.getBizCode());
+        if (req.getStatus() != null)      a.setStatus(mapFormStatusToDomain(req.getStatus()));
         if (req.getConfigurations() != null) {
             a.setConfigurations(serializeConfig(req.getConfigurations()));
         }
         activityRepository.save(a);
-        log.info("更新活动 id={}", id);
+        log.info("更新活动 id={} status={}", id, a.getStatus());
     }
 
     public List<ActivityViewDTO> listActivities() {
@@ -118,6 +120,29 @@ public class ActivityAdminAppService {
         }
         log.info("管理端手动触发开奖 activityId={}", activityId);
         drawService.draw(activityId);
+    }
+
+    // ---------- status 映射（UI ↔ 领域） ----------
+
+    /**
+     * 后台 UI 状态 → 领域状态机：
+     * <pre>
+     *   0 草稿    → 0 NOT_STARTED
+     *   1 已上架  → 1 ONGOING
+     *   2 已下架  → 3 DRAWN（领域无"下架"概念，复用已开奖态；后续可加 OFFLINE 单独区分）
+     *   其它     → 0 NOT_STARTED（兜底）
+     * </pre>
+     */
+    static Integer mapFormStatusToDomain(Integer formStatus) {
+        if (formStatus == null) {
+            return 0;
+        }
+        return switch (formStatus) {
+            case 0 -> 0;
+            case 1 -> 1;
+            case 2 -> 3;
+            default -> 0;
+        };
     }
 
     // ---------- configurations JSON 序列化 ----------
