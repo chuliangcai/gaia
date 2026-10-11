@@ -1,4 +1,4 @@
-package com.gaia.app.treasure.meta;
+package com.gaia.app.bizproduct.meta;
 
 import com.gaia.api.ability.GameDescriptor;
 import com.gaia.iframework.annotation.BizProduct;

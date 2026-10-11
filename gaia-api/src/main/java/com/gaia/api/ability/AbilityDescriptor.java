@@ -29,6 +29,12 @@ public class AbilityDescriptor implements Serializable {
     /** 玩法命名空间 */
     private String bizNs;
 
+    /**
+     * 玩法命名空间对应 {@code @DomainNs} 类的中文名（"任务域" / "开奖域" / …）。
+     * 未匹配到 {@code @DomainNs} 类或 {@code bizNs} 为空时为 {@code null}。
+     */
+    private String domainName;
+
     /** 展示名 */
     private String name;
 

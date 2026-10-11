@@ -1,5 +1,7 @@
 package com.gaia.domain.ability.draw.config;
 
+import com.fasterxml.jackson.annotation.JsonClassDescription;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,16 +21,20 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonClassDescription("集奖开奖配置")
 public class CollectDrawConfig implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     /** 开奖时间；{@code preCheck} 校验当前时间是否已到达该时刻，未到则短路返回 DRAW_NOT_DUE。 */
+    @JsonPropertyDescription("开奖时间")
     private LocalDateTime drawTime;
 
     /** 本次开奖的奖品总个数；{@code <= 0} 时 {@code draw} 步视作"无人中奖"直接结束。 */
+    @JsonPropertyDescription("奖品总数")
     private Integer totalPrizeCount;
 
     /** 每位用户最多可中得的奖品个数；{@code null} 时视为"不限制单人中奖上限"。 */
+    @JsonPropertyDescription("单人中奖上限")
     private Integer perUserPrizeLimit;
 }

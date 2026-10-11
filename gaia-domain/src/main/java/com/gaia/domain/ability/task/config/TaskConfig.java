@@ -1,5 +1,7 @@
 package com.gaia.domain.ability.task.config;
 
+import com.fasterxml.jackson.annotation.JsonClassDescription;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,10 +21,12 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonClassDescription("任务配置")
 public class TaskConfig implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     /** 任务列表配置 */
+    @JsonPropertyDescription("任务列表")
     private List<Task> tasks;
 }

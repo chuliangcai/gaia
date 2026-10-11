@@ -48,7 +48,7 @@ import java.util.Optional;
  *     （{@code userId → probability}）。</li>
  *     <li>{@link #draw(RequestContext) draw} —
  *     将概率归一化为权重，调用 {@link WeightedDrawAlgorithm} 按权重不放回抽出
- *     {@link CollectDrawConfig#getWinnerCount()} 名中奖者。</li>
+ *     {@link CollectDrawConfig#getTotalPrizeCount()} 名中奖者。</li>
  *     <li>{@link #issuePrize(RequestContext) issuePrize} —
  *     调用扩展点 {@link IssuePrizeExt} 得到待入库的 {@link MemberBenefit} 奖品条目，
  *     统一写入账本与活动明细（{@code DRAW_WON} + {@code DRAW_EXECUTED}），并将
@@ -175,16 +175,16 @@ public class CollectDrawAbility extends AbstractBaseAbility {
 
     /**
      * 按概率抽奖：归一化为权重 → 调 {@link WeightedDrawAlgorithm}。
-     * {@code winnerCount <= 0} 或概率总和 ≤ 0 时视为"无人中奖"。
+     * {@code totalPrizeCount <= 0} 或概率总和 ≤ 0 时视为"无人中奖"。
      */
     IFResult<CollectDrawResultDTO> draw(RequestContext context) {
         ExecutionContext ec = resolveContext(context);
         if (ec.errorMsgCode != null) {
             return IFResult.fail(ec.errorMsgCode);
         }
-        Integer winnerCount = ec.config.getWinnerCount();
-        if (winnerCount == null || winnerCount <= 0) {
-            log.info("winnerCount 未配置或非正，跳过抽奖 activityId={}", ec.activityId);
+        Integer totalPrizeCount = ec.config.getTotalPrizeCount();
+        if (totalPrizeCount == null || totalPrizeCount <= 0) {
+            log.info("totalPrizeCount 未配置或非正，跳过抽奖 activityId={}", ec.activityId);
             ec.winners = Collections.emptyList();
             return IFResult.success(CollectDrawResultDTO.builder()
                     .activityId(ec.activityId)
@@ -209,7 +209,7 @@ public class CollectDrawAbility extends AbstractBaseAbility {
                     .build());
         }
 
-        List<DrawWinner> winners = drawAlgorithm.draw(candidates, winnerCount);
+        List<DrawWinner> winners = drawAlgorithm.draw(candidates, totalPrizeCount);
         // 给每个中奖者从其夺宝码集合中取一条作为中奖码（与原 DrawService 行为对齐）
         for (DrawWinner w : winners) {
             List<String> userCodes = memberBenefitRepository
@@ -217,8 +217,8 @@ public class CollectDrawAbility extends AbstractBaseAbility {
             w.setCode(userCodes.isEmpty() ? null : userCodes.get(0));
         }
         ec.winners = winners;
-        log.info("抽奖完成 activityId={} candidateSize={} winnerCount={} winners={}",
-                ec.activityId, candidates.size(), winnerCount, winners.size());
+        log.info("抽奖完成 activityId={} candidateSize={} totalPrizeCount={} winners={}",
+                ec.activityId, candidates.size(), totalPrizeCount, winners.size());
         return IFResult.success(CollectDrawResultDTO.builder()
                 .activityId(ec.activityId)
                 .winners(winners)

@@ -88,7 +88,7 @@ function SchemaNode({ schema, path }) {
           <Form.Item
             key={k}
             name={[...path, k]}
-            label={humanize(k)}
+            label={sub?.description || humanize(k)}
             style={{ marginBottom: 0 }}
           >
             <SchemaNode schema={sub} path={[...path, k]} />
@@ -122,7 +122,7 @@ function SchemaNode({ schema, path }) {
                         <Form.Item
                           key={k}
                           name={[field.name, k]}
-                          label={humanize(k)}
+                          label={sub?.description || humanize(k)}
                           style={{ marginBottom: 8 }}
                         >
                           <SchemaNode schema={sub} path={[field.name, k]} />

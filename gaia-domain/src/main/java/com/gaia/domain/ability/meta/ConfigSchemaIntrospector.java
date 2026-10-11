@@ -1,5 +1,9 @@
 package com.gaia.domain.ability.meta;
 
+import com.fasterxml.jackson.annotation.JsonClassDescription;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import org.springframework.core.annotation.AnnotationUtils;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -145,6 +149,13 @@ public final class ConfigSchemaIntrospector {
         Map<String, Object> schema = new LinkedHashMap<>();
         schema.put("type", "object");
 
+        // 类层级中文名（@JsonClassDescription）→ JSON Schema 标准 description 字段。
+        // 用于前端表单给整个配置类/嵌套 POJO 渲染友好标题。
+        JsonClassDescription clsAnn = AnnotationUtils.findAnnotation(pojoType, JsonClassDescription.class);
+        if (clsAnn != null && !clsAnn.value().isEmpty()) {
+            schema.put("description", clsAnn.value());
+        }
+
         Map<String, Object> properties = new LinkedHashMap<>();
         // 简单对所有非 static / 非 transient / 非 serialVersionUID 字段建模
         for (Field f : pojoType.getDeclaredFields()) {
@@ -156,7 +167,14 @@ public final class ConfigSchemaIntrospector {
             if ("serialVersionUID".equals(name)) {
                 continue;
             }
-            properties.put(name, describeFieldType(f.getGenericType(), depth + 1, next));
+            Map<String, Object> propSchema = describeFieldType(f.getGenericType(), depth + 1, next);
+            // 字段层级中文名（@JsonPropertyDescription）→ property 节点 description。
+            // 前端表单 label 优先取此值，缺省时降级 humanize()。
+            JsonPropertyDescription fieldAnn = AnnotationUtils.findAnnotation(f, JsonPropertyDescription.class);
+            if (fieldAnn != null && !fieldAnn.value().isEmpty()) {
+                propSchema.put("description", fieldAnn.value());
+            }
+            properties.put(name, propSchema);
         }
         if (!properties.isEmpty()) {
             schema.put("properties", properties);

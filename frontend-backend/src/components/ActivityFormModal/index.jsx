@@ -287,9 +287,15 @@ export default function ActivityFormModal({ open, initial, onCancel, onSubmit })
                     }}
                   >
                     <Tag color="geekblue" style={{ margin: 0, fontWeight: 600 }}>
-                      {bizNs === '__ungrouped__' ? '未分类' : bizNs}
+                      {bizNs === '__ungrouped__'
+                        ? '未分类'
+                        : (groupTitle(bizNs, items).name)}
                     </Tag>
-                    <span style={{ color: '#999', fontSize: 12 }}>域</span>
+                    {bizNs !== '__ungrouped__' && (
+                      <code style={{ color: '#999', fontSize: 12 }}>
+                        {groupTitle(bizNs, items).code}
+                      </code>
+                    )}
                     <span style={{ color: '#bbb', fontSize: 12 }}>
                       · {items.length} 个能力
                     </span>
@@ -345,7 +351,12 @@ export default function ActivityFormModal({ open, initial, onCancel, onSubmit })
             }}
           >
             <div style={{ marginBottom: 12 }}>
-              <span style={{ fontWeight: 600 }}>{shortClassName(className)}</span>
+              <span style={{ fontWeight: 600 }}>{schema?.description || shortClassName(className)}</span>
+              {schema?.description && (
+                <code style={{ marginLeft: 8, color: '#999', fontSize: 12 }}>
+                  {shortClassName(className)}
+                </code>
+              )}
               <span style={{ marginLeft: 8, color: '#999', fontSize: 12 }}>
                 （{sharedAbilities.map((a) => a.code).join(' / ')} 共用）
               </span>
@@ -367,6 +378,18 @@ function shortClassName(fqn) {
   if (!fqn) return '';
   const last = fqn.split('.').pop();
   return last;
+}
+
+/**
+ * 域分组的展示字段：name 优先取后端注入的 {@code domainName}（来自
+ * {@code @DomainNs} 中文名），code 取 {@code bizNs}。
+ * 两者任一缺失时回退：未填 name → 用 code 兼任；未匹配到域中文名 → 后端
+ * {@code domainName} 字段本就是 null，name 退化为 bizNs。
+ */
+function groupTitle(bizNs, items) {
+  const code = bizNs || '';
+  const name = items.find((a) => a.domainName)?.domainName || code;
+  return { name, code };
 }
 
 function stringifyDates(obj) {

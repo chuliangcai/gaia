@@ -2,6 +2,7 @@ package com.gaia.domain.ability.meta;
 
 import com.gaia.api.ability.AbilityDescriptor;
 import com.gaia.iframework.annotation.Ability;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -35,7 +36,11 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class AbilityMetaRegistry implements ApplicationContextAware {
+
+    /** {@link DomainMetaRegistry} 通过构造注入，启动期早于 {@link #init()} 完成自身 {@code @PostConstruct}。 */
+    private final DomainMetaRegistry domainMetaRegistry;
 
     private ApplicationContext applicationContext;
     private final ConcurrentMap<String, AbilityDescriptor> byCode = new ConcurrentHashMap<>();
@@ -91,11 +96,15 @@ public class AbilityMetaRegistry implements ApplicationContextAware {
         return Collections.unmodifiableMap(byCode);
     }
 
-    private static AbilityDescriptor toDescriptor(Ability ann) {
+    private AbilityDescriptor toDescriptor(Ability ann) {
         Class<?> cfg = ann.configClass();
+        String bizNs = ann.bizNs() == null ? "" : ann.bizNs();
+        // 按 bizNs 反查 @DomainNs 中文名；查不到时（bizNs 为空或未声明对应 @DomainNs 类）置 null。
+        String domainName = bizNs.isEmpty() ? null : domainMetaRegistry.findName(bizNs).orElse(null);
         return AbilityDescriptor.builder()
                 .code(ann.code())
-                .bizNs(ann.bizNs() == null ? "" : ann.bizNs())
+                .bizNs(bizNs)
+                .domainName(domainName)
                 .name(ann.name())
                 .configClassName(cfg == null ? Void.class.getName() : cfg.getName())
                 .configSchema(ConfigSchemaIntrospector.introspect(cfg))

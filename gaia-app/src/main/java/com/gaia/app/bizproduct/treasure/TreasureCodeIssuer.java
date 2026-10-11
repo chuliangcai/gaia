@@ -1,4 +1,4 @@
-package com.gaia.app.treasure.service;
+package com.gaia.app.bizproduct.treasure;
 
 import com.gaia.domain.service.treasure.TreasureCodeGenerator;
 import lombok.RequiredArgsConstructor;
