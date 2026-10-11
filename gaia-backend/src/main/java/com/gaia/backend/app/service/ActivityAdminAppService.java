@@ -3,21 +3,16 @@ package com.gaia.backend.app.service;
 import com.gaia.backend.app.dto.ActivityCreateRequest;
 import com.gaia.backend.app.dto.ActivityUpdateRequest;
 import com.gaia.backend.app.dto.ActivityViewDTO;
-import com.gaia.backend.app.dto.MemberSeedDTO;
 import com.gaia.backend.app.dto.TaskConfigDTO;
 import com.gaia.domain.base.activity.Activity;
 import com.gaia.domain.base.activity.ActivityTask;
-import com.gaia.domain.member.Member;
 import com.gaia.domain.repository.ActivityRepository;
 import com.gaia.domain.repository.ActivityTaskRepository;
-import com.gaia.domain.repository.MemberRepository;
 import com.gaia.domain.service.treasure.DrawService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,7 +31,6 @@ public class ActivityAdminAppService {
 
     private final ActivityRepository activityRepository;
     private final ActivityTaskRepository activityTaskRepository;
-    private final MemberRepository memberRepository;
     private final DrawService drawService;
 
     public Long createActivity(ActivityCreateRequest req) {
@@ -164,22 +158,5 @@ public class ActivityAdminAppService {
         }
         log.info("管理端手动触发开奖 activityId={}", activityId);
         drawService.draw(activityId);
-    }
-
-    public void seedMembers(List<MemberSeedDTO> members) {
-        if (members == null || members.isEmpty()) {
-            return;
-        }
-        for (MemberSeedDTO m : members) {
-            Member entity = Member.builder()
-                    .userId(m.getUserId())
-                    .level(m.getLevel() == null ? "NORMAL" : m.getLevel())
-                    .status(m.getStatus() == null ? 1 : m.getStatus())
-                    .joinAt(m.getJoinAt() == null ? LocalDateTime.now(ZoneId.of("Asia/Shanghai")) : m.getJoinAt())
-                    .expireAt(m.getExpireAt())
-                    .build();
-            memberRepository.save(entity);
-        }
-        log.info("灌入会员数量={}", members.size());
     }
 }

@@ -9,19 +9,20 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 灌会员数据 DTO（后台下发）。
+ * 更新会员请求。
+ *
+ * <p>三个字段全部可选，{@code null} 表示"不修改"。典型用法：单独传
+ * {@code status=0} 做停用、单独传 {@code expireAt} 续期。</p>
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MemberSeedDTO implements Serializable {
+public class MemberUpdateRequest implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private Long userId;
     private String level;
     private Integer status;
-    private LocalDateTime joinAt;
     private LocalDateTime expireAt;
 }

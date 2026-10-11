@@ -19,4 +19,14 @@ public interface MemberRepository {
      * 用于"切换用户"面板的候选名单。
      */
     List<Long> listActiveUserIds();
+
+    /**
+     * 全量列表（后台管理用，按 id 倒序）。
+     */
+    List<Member> findAll();
+
+    /**
+     * 物理删除（后台管理用，幂等：userId 为 null 直接返回）。
+     */
+    void deleteByUserId(Long userId);
 }

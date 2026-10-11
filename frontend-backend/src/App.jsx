@@ -1,10 +1,24 @@
+import { useState } from 'react';
 import { Layout, Menu, Typography } from 'antd';
-import { GiftOutlined } from '@ant-design/icons';
+import { GiftOutlined, UserOutlined } from '@ant-design/icons';
 import ActivityList from './pages/ActivityList/index.jsx';
+import MemberList from './pages/MemberList/index.jsx';
 
 const { Header, Sider, Content } = Layout;
 
+const MENU_ITEMS = [
+  { key: 'activities', icon: <GiftOutlined />, label: '活动管理' },
+  { key: 'members', icon: <UserOutlined />, label: '会员管理' },
+];
+
+const HEADER_TITLE = {
+  activities: '活动管理',
+  members: '会员管理',
+};
+
 export default function App() {
+  const [activeKey, setActiveKey] = useState('activities');
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider width={220} theme="light" style={{ borderRight: '1px solid #f0f0f0' }}>
@@ -26,10 +40,9 @@ export default function App() {
         </div>
         <Menu
           mode="inline"
-          defaultSelectedKeys={['activities']}
-          items={[
-            { key: 'activities', icon: <GiftOutlined />, label: '活动管理' },
-          ]}
+          selectedKeys={[activeKey]}
+          onClick={({ key }) => setActiveKey(key)}
+          items={MENU_ITEMS}
         />
       </Sider>
       <Layout>
@@ -43,11 +56,11 @@ export default function App() {
           }}
         >
           <Typography.Title level={4} style={{ margin: 0 }}>
-            活动管理
+            {HEADER_TITLE[activeKey] || '管理后台'}
           </Typography.Title>
         </Header>
         <Content style={{ padding: 24, background: '#f5f5f5' }}>
-          <ActivityList />
+          {activeKey === 'members' ? <MemberList /> : <ActivityList />}
         </Content>
       </Layout>
     </Layout>

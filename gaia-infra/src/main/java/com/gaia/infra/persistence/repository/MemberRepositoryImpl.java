@@ -53,6 +53,25 @@ public class MemberRepositoryImpl implements MemberRepository {
                 .collect(java.util.stream.Collectors.toList());
     }
 
+    @Override
+    public List<Member> findAll() {
+        QueryWrapper<MemberPO> qw = new QueryWrapper<>();
+        qw.orderByDesc("id");
+        return mapper.selectList(qw).stream()
+                .map(MemberRepositoryImpl::toEntity)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
+    public void deleteByUserId(Long userId) {
+        if (userId == null) {
+            return;
+        }
+        QueryWrapper<MemberPO> qw = new QueryWrapper<>();
+        qw.eq("user_id", userId);
+        mapper.delete(qw);
+    }
+
     // ----------------------- PO ↔ Domain -----------------------
 
     static Member toEntity(MemberPO po) {
