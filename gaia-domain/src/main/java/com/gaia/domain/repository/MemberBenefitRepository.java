@@ -11,16 +11,14 @@ import java.util.List;
 public interface MemberBenefitRepository {
 
     /**
-     * 批量插入夺宝码权益。依赖数据库生成列 UK 保证活动内唯一。
+     * 批量插入权益（类型无关：LOTTERY_CODE / PRIZE / 未来其他类型共用）。
+     *
+     * <p>UK 冲突由 DB 抛出 {@link org.springframework.dao.DuplicateKeyException}，
+     * Repository 不吞异常——是否重试由调用方按业务决定。</p>
      *
      * @return 实际插入条数
      */
-    int insertLotteryCodes(List<MemberBenefit> benefits);
-
-    /**
-     * 批量插入中奖奖品权益。
-     */
-    int insertPrizes(List<MemberBenefit> prizes);
+    int insertBenefits(List<MemberBenefit> benefits);
 
     /**
      * 查询某用户在某活动的夺宝码。

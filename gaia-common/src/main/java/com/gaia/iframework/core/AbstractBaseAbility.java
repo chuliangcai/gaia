@@ -1,6 +1,10 @@
 package com.gaia.iframework.core;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
 /**
@@ -8,13 +12,23 @@ import java.util.function.BiFunction;
  *
  * <p>提供两件事：
  * <ol>
- *     <li>一个非空的 {@link #execute(RequestContext)} 骨架：顺序遍历
- *     {@link #getProcessor(String)} 返回的处理器名并返回空成功结果。
- *     业务侧通常直接覆写 {@link #execute(RequestContext)} 实现具体逻辑。</li>
+ *     <li>{@link #execute(RequestContext)} 的默认执行骨架：按
+ *     {@link #getProcessor(String)} 返回的处理器名顺序，对每个名字通过反射调用
+ *     子类同名方法（参数为 {@link RequestContext}、返回
+ *     {@link IFResult}），任一步返回失败即短路返回。</li>
  *     <li>通过 {@link #reduceExecute(String, String, ExtensionCallback)}
  *     按 (bizCode, extensionCode) 查找当前玩法下的扩展点实例。</li>
  * </ol>
  * </p>
+ *
+ * <p>子类无需覆写任何方法：{@link #getProcessor(String)} 声明的每个处理器名
+ * 直接对应一个签名匹配的方法（如 {@code preCheck(RequestContext)}），由基类
+ * 在 {@link #invokeProcessor(String, RequestContext)} 中反射调用并缓存。
+ * 查找不到同名方法时视为配置错误，抛 {@link IllegalStateException}。</p>
+ *
+ * <p>如需完全自定义流程，仍可覆写 {@link #execute(RequestContext)}。
+ * 如需自定义分派（如混入非 {@code (RequestContext) -> IFResult<?>}
+ * 形式的方法），仍可覆写 {@link #invokeProcessor(String, RequestContext)}。</p>
  *
  * <p>{@link #reduceExecute(String, String, ExtensionCallback)} 的实现依赖一个
  * 由容器（如 Spring）注册的 {@link AbilityExtHolder#lookup} 静态桥接；
@@ -25,16 +39,92 @@ import java.util.function.BiFunction;
 public abstract class AbstractBaseAbility implements IAbility {
 
     /**
-     * 骨架实现：子类若需要 processor 链式调用可覆写；否则直接覆写 execute() 即可。
+     * 处理器方法缓存：按处理器名缓存反射到的 {@link Method}，避免每次
+     * {@link #invokeProcessor(String, RequestContext)} 都重新反射查找。
+     */
+    private final Map<String, Method> processorMethodCache = new ConcurrentHashMap<>();
+
+    /**
+     * 默认执行骨架：按 {@link #getProcessor(String)} 返回的处理器名顺序，
+     * 逐个调用 {@link #invokeProcessor(String, RequestContext)}；
+     * 任一步返回失败即短路返回失败结果，否则返回最后一步的成功结果。
+     *
+     * <p>处理器列表为空时直接返回空成功结果（用于"该 ability 暂无可执行业务"的占位）。</p>
      */
     @Override
     public IFResult<?> execute(RequestContext context) {
-        // 读取一次处理器列表（即便未真正链式调用，也用于校验配置完整性）。
+        if (context == null) {
+            throw new IllegalArgumentException("context 不能为空");
+        }
         List<String> processors = getProcessor(context.getBizCode());
         if (processors == null || processors.isEmpty()) {
             return IFResult.success(null);
         }
-        return IFResult.success(null);
+        IFResult<?> last = IFResult.success(null);
+        for (String name : processors) {
+            IFResult<?> r = invokeProcessor(name, context);
+            if (r == null) {
+                throw new IllegalStateException(
+                        "处理器 " + name + " 返回了 null 结果");
+            }
+            if (!r.isSuccess()) {
+                return r;
+            }
+            last = r;
+        }
+        return last;
+    }
+
+    /**
+     * 按处理器名反射调用子类同名方法。
+     *
+     * <p>子类方法签名要求：参数类型为 {@link RequestContext}，返回类型为
+     * {@link IFResult}（或其子类型），方法名与 {@link #getProcessor(String)}
+     * 返回列表中的条目一致。方法可见性不限（包级私有、私有均可）。</p>
+     *
+     * <p>首次按名查找到对应 {@link Method} 后会缓存到本实例的
+     * {@link #processorMethodCache}。同名方法被多次声明（继承链上重载/隐藏）
+     * 或参数类型不匹配时，查找阶段会抛 {@link NoSuchMethodException}
+     * （被本方法翻译成 {@link IllegalStateException}）。
+     * 由于参数类型精确指定为 {@code RequestContext}，
+     * 不会误匹配 {@link Object} 上的方法（如 {@code toString()}）。</p>
+     */
+    protected IFResult<?> invokeProcessor(String name, RequestContext context) {
+        Method m = processorMethodCache.computeIfAbsent(name, this::findProcessorMethod);
+        if (m == null) {
+            throw new IllegalStateException(
+                    "能力 " + getClass().getName() + " 声明了处理器 [" + name
+                            + "] 但未声明同名方法 (RequestContext)");
+        }
+        try {
+            return (IFResult<?>) m.invoke(this, context);
+        } catch (InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof RuntimeException re) {
+                throw re;
+            }
+            if (cause instanceof Error err) {
+                throw err;
+            }
+            throw new RuntimeException("处理器 " + name + " 执行失败", cause);
+        } catch (IllegalAccessException e) {
+            throw new IllegalStateException("处理器 " + name + " 不可访问", e);
+        }
+    }
+
+    /**
+     * 在本类上查找与处理器名同名的方法（参数为 {@link RequestContext}）。
+     * 找不到返回 {@code null}，由 {@link #invokeProcessor(String, RequestContext)}
+     * 翻译为 {@link IllegalStateException}。
+     */
+    private Method findProcessorMethod(String name) {
+        try {
+            Method m = getClass().getDeclaredMethod(name, RequestContext.class);
+            m.setAccessible(true);
+            return m;
+        } catch (NoSuchMethodException e) {
+            return null;
+        }
     }
 
     /**

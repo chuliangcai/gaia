@@ -78,6 +78,19 @@ public class ActivityRecordRepositoryImpl implements ActivityRecordRepository {
         return mapper.selectCount(qw);
     }
 
+    @Override
+    public long countByUserTaskOnDay(Long userId, Long activityId, Long taskId,
+                                     LocalDateTime dayStart, LocalDateTime dayEnd) {
+        QueryWrapper<ActivityRecordPO> qw = new QueryWrapper<>();
+        qw.eq("user_id", userId)
+                .eq("activity_id", activityId)
+                .eq("biz_id", taskId)
+                .eq("action_type", "TASK_EXECUTED")
+                .ge("created_at", dayStart)
+                .lt("created_at", dayEnd);
+        return mapper.selectCount(qw);
+    }
+
     // ----------------------- PO ↔ Domain -----------------------
 
     static ActivityRecord toEntity(ActivityRecordPO po) {

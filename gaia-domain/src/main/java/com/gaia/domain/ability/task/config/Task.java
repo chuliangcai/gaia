@@ -12,7 +12,7 @@ import java.io.Serializable;
  *
  * <p>取代 {@code gaia_activity_task} 表的一行；状态 0=禁用,1=启用，
  * {@code maxExecutions} 为单用户最大可执行次数，
- * {@code rewardCodes} 为每执行一次发放的夺宝码数。</p>
+ * {@code rewardCount} 为每执行一次发放的夺宝码数。</p>
  */
 @Data
 @Builder
@@ -25,12 +25,11 @@ public class Task implements Serializable {
     /** 任务记录 id（保留为配置项自身的稳定 id，框架不强制唯一）。 */
     private Long id;
 
-    private String taskCode;
     private String taskName;
     private String taskDesc;
 
     /** 每执行一次发放几个夺宝码 */
-    private Integer rewardCodes;
+    private Integer rewardCount;
 
     /** 单用户最多执行次数 */
     private Integer maxExecutions;

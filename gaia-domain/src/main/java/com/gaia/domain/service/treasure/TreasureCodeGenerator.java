@@ -101,7 +101,7 @@ public class TreasureCodeGenerator {
                 batch.add(b);
             }
             try {
-                int inserted = repo.insertLotteryCodes(batch);
+                int inserted = repo.insertBenefits(batch);
                 // 依赖 DB UK 保证唯一，inserted == batch.size() 视为全部成功
                 if (inserted == batch.size()) {
                     granted.addAll(candidates);

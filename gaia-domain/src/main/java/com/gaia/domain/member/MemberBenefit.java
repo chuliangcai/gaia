@@ -33,6 +33,12 @@ public class MemberBenefit implements Serializable {
     private String benefitValue;
     private Long activityId;
 
+    /**
+     * 生效活动 ID：权益在哪个活动内生效；可为 {@code null}，表示该权益不区分活动
+     * （如全局券）。会员夺宝场景下与 {@link #activityId} 同值。
+     */
+    private Long effectiveActivityId;
+
     /** 来源明细 gaia_activity_record.id（每次权益发放必对应一条明细） */
     private Long sourceId;
 

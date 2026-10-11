@@ -19,10 +19,9 @@ public class TaskDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Long id;
-    private String taskCode;
     private String taskName;
     private String taskDesc;
-    private Integer rewardCodes;
+    private Integer rewardCount;
     private Integer maxExecutions;
     private Integer executedCount;
 

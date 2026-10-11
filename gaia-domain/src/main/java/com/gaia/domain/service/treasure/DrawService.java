@@ -137,7 +137,7 @@ public class DrawService {
             prizes.add(prizeEntity);
         }
         // 先插奖品拿到 sourceId，再写 DRAW_WON 明细
-        memberBenefitRepository.insertPrizes(prizes);
+        memberBenefitRepository.insertBenefits(prizes);
         for (int i = 0; i < prizes.size(); i++) {
             MemberBenefit p = prizes.get(i);
             DrawWinner w = winners.get(i);

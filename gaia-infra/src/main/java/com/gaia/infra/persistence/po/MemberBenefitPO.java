@@ -27,6 +27,10 @@ public class MemberBenefitPO implements Serializable {
     private String benefitType;
     private String benefitValue;
     private Long activityId;
+
+    /** 生效活动 ID（可为 NULL 表示权益不区分活动）。会员夺宝场景下与 activity_id 同值。 */
+    private Long effectiveActivityId;
+
     private Long sourceId;
 
     /** 0=失效,1=有效 */

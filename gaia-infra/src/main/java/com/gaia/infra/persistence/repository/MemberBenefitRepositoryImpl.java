@@ -31,7 +31,7 @@ public class MemberBenefitRepositoryImpl implements MemberBenefitRepository {
     private final MemberBenefitMapper mapper;
 
     @Override
-    public int insertLotteryCodes(List<MemberBenefit> benefits) {
+    public int insertBenefits(List<MemberBenefit> benefits) {
         if (benefits == null || benefits.isEmpty()) {
             return 0;
         }
@@ -49,32 +49,11 @@ public class MemberBenefitRepositoryImpl implements MemberBenefitRepository {
                 b.setId(po.getId());
                 inserted++;
             } catch (DuplicateKeyException dup) {
-                log.info("lottery code duplicate value={} activityId={}",
-                        b.getBenefitValue(), b.getActivityId());
-                // 唯一冲突：调用方应重试生成新的码
+                // DB 唯一约束冲突（如 LOTTERY_CODE 在同活动内重复），Repository 不吞
+                log.info("member benefit duplicate type={} value={} activityId={}",
+                        b.getBenefitType(), b.getBenefitValue(), b.getActivityId());
                 throw dup;
             }
-        }
-        return inserted;
-    }
-
-    @Override
-    public int insertPrizes(List<MemberBenefit> prizes) {
-        if (prizes == null || prizes.isEmpty()) {
-            return 0;
-        }
-        int inserted = 0;
-        for (MemberBenefit b : prizes) {
-            if (b.getGrantedAt() == null) {
-                b.setGrantedAt(LocalDateTime.now());
-            }
-            if (b.getStatus() == null) {
-                b.setStatus(1);
-            }
-            MemberBenefitPO po = toPO(b);
-            mapper.insert(po);
-            b.setId(po.getId());
-            inserted++;
         }
         return inserted;
     }
@@ -126,6 +105,7 @@ public class MemberBenefitRepositoryImpl implements MemberBenefitRepository {
                 .benefitType(po.getBenefitType())
                 .benefitValue(po.getBenefitValue())
                 .activityId(po.getActivityId())
+                .effectiveActivityId(po.getEffectiveActivityId())
                 .sourceId(po.getSourceId())
                 .status(po.getStatus())
                 .grantedAt(po.getGrantedAt())
@@ -145,6 +125,7 @@ public class MemberBenefitRepositoryImpl implements MemberBenefitRepository {
         po.setBenefitType(e.getBenefitType());
         po.setBenefitValue(e.getBenefitValue());
         po.setActivityId(e.getActivityId());
+        po.setEffectiveActivityId(e.getEffectiveActivityId());
         po.setSourceId(e.getSourceId());
         po.setStatus(e.getStatus());
         po.setGrantedAt(e.getGrantedAt());

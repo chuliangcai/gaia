@@ -34,7 +34,8 @@ export default function ActivityFormModal({ open, initial, onCancel, onSubmit })
 
   // form 是 abilities 选中的单一来源：edit 回填 / 勾选 / 取消勾选都直接落 form，
   // 由 Form.useWatch 同步给 UI，避免 useState + useEffect 双源不一致。
-  const selectedCodes = Form.useWatch('abilities', form) || [];
+  const watched = Form.useWatch('abilities', form);
+  const selectedCodes = Array.isArray(watched) ? watched : [];
 
   // 拉取元数据
   useEffect(() => {
@@ -225,6 +226,15 @@ export default function ActivityFormModal({ open, initial, onCancel, onSubmit })
           rules={[{ required: true, message: '请至少选择一个能力', type: 'array', min: 1 }]}
           tooltip="能力按所属域（@Ability.bizNs）分组展示；勾选后按 configClassName 去重联动渲染配置子表单"
         >
+          {/* 占位：Form.Item 必须有 child 才能挂 cloneElement。
+              真正可视的勾选 UI 放在下方的兄弟节点里 ——
+              如果直接把 UI 放进来，Form.Item 会 cloneElement 把 onChange 注入到我们的容器 div，
+              勾选 checkbox 时事件冒泡到容器，Antd 用 e.target.value="on" 覆盖掉我们 setFieldsValue 的数组。 */}
+          <span aria-hidden style={{ display: 'none' }} />
+        </Form.Item>
+
+        {/* 可视 UI：脱离 Form.Item 的 FieldContext，cloneElement 不再干扰勾选事件。 */}
+        <div data-testid="abilities-list">
           {abilities.length === 0 ? (
             <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无可选能力" />
           ) : (
@@ -284,7 +294,7 @@ export default function ActivityFormModal({ open, initial, onCancel, onSubmit })
               ))}
             </div>
           )}
-        </Form.Item>
+        </div>
 
         {/* 联动配置类表单：按 configClassName 去重渲染 */}
         {distinctConfigs.length === 0 && selectedCodes.length > 0 && (

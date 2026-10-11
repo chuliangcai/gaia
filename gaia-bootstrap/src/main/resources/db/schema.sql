@@ -48,6 +48,18 @@ PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
+-- 老库兼容：gaia_member_benefit 若缺 effective_activity_id 列则补上
+SET @col := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'gaia_member_benefit' AND COLUMN_NAME = 'effective_activity_id');
+SET @sql := IF(@col = 0,
+               CONCAT('ALTER TABLE gaia_member_benefit ADD COLUMN effective_activity_id BIGINT DEFAULT NULL COMMENT ',
+                      CHAR(39), '生效活动 ID（NULL 表示不区分活动）', CHAR(39),
+                      ' AFTER activity_id'),
+               'DO 0');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
 -- 活动明细表 (事件流 + 幂等键)
 CREATE TABLE IF NOT EXISTS `gaia_activity_record` (
     `id`              BIGINT          NOT NULL AUTO_INCREMENT COMMENT '主键',
@@ -86,6 +98,7 @@ CREATE TABLE IF NOT EXISTS `gaia_member_benefit` (
     `benefit_type`    VARCHAR(32)     NOT NULL COMMENT '类型: LOTTERY_CODE/PRIZE',
     `benefit_value`   VARCHAR(255)    NOT NULL DEFAULT '' COMMENT '值 (夺宝码或奖品描述)',
     `activity_id`     BIGINT          DEFAULT NULL COMMENT '所属活动',
+    `effective_activity_id` BIGINT    DEFAULT NULL COMMENT '生效活动 ID（NULL 表示不区分活动）',
     `source_id`       BIGINT          DEFAULT NULL COMMENT '来源明细 gaia_activity_record.id',
     `status`          TINYINT         NOT NULL DEFAULT 1 COMMENT '0=失效,1=有效',
     `granted_at`      DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
