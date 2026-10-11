@@ -2,6 +2,7 @@ package com.gaia.domain.service.treasure;
 
 import com.gaia.domain.draw.DrawCandidate;
 import com.gaia.domain.draw.DrawWinner;
+import org.springframework.stereotype.Component;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -23,6 +24,10 @@ import java.util.Set;
  *   <li>重复直到抽够 winnerCount 名或候选池空</li>
  * </ol>
  */
+// TODO 临时：集夺宝码开奖是“能力”，按项目词汇应该走 @Ability / 能力注册中心，
+// 当前 DrawService 还在 gaia-domain，只能先 @Component 让 Spring 能注入。
+// 见 [[gaia-design-intent]] 与 [[gaia-app-scope]] 的依赖方向调整后再迁移。
+@Component
 public class WeightedDrawAlgorithm {
 
     private final SecureRandom random = new SecureRandom();

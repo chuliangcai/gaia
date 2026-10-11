@@ -5,7 +5,7 @@ import com.gaia.iframework.core.AbstractBaseAbility;
 import com.gaia.iframework.core.IFResult;
 import com.gaia.iframework.core.RequestContext;
 import com.gaia.app.entity.UserSignRecord;
-import com.gaia.app.lock.RedisLock;
+import com.gaia.domain.lock.RedisLock;
 import com.gaia.app.mapper.UserSignRecordMapper;
 import com.gaia.app.service.SignBitMapService;
 import com.gaia.app.service.SignRewardRule;

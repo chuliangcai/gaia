@@ -12,7 +12,7 @@
 
     <artifactId>gaia-backend</artifactId>
     <name>gaia-backend</name>
-    <description>Gaia 后台管理进程（端口 8088）：依赖 gaia-domain 的领域接口，由 gaia-infra 提供 Repository 实现。</description>
+    <description>Gaia 后台管理进程（端口 8088）：依赖 gaia-domain 的领域接口 + gaia-infra 的 Repository 实现，由 backend 自带的 ActivityAdminAppService 直接编排 domain。不再走 Dubbo、不再依赖 gaia-app。</description>
 
     <dependencies>
         <!-- 业务只面对领域层抽象：依赖倒置 -->
@@ -27,34 +27,20 @@
             <artifactId>gaia-infra</artifactId>
         </dependency>
 
-        <!-- 调用 server 端 Dubbo 服务 -->
-        <dependency>
-            <groupId>com.gaia</groupId>
-            <artifactId>gaia-api</artifactId>
-        </dependency>
-
-        <!-- Dubbo 消费端 -->
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-spring-boot-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.curator</groupId>
-            <artifactId>curator-framework</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.curator</groupId>
-            <artifactId>curator-recipes</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.curator</groupId>
-            <artifactId>curator-x-discovery</artifactId>
-        </dependency>
-
         <!-- Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- 手动开奖（DrawService）需要 Redis 分布式锁 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
         </dependency>
 
         <!-- 监控 -->

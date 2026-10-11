@@ -1,4 +1,4 @@
-package com.gaia.app.lock;
+package com.gaia.domain.lock;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

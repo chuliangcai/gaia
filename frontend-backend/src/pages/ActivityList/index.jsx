@@ -167,7 +167,7 @@ export default function ActivityList() {
     <>
       {ctx}
       <Card
-        bordered={false}
+        variant="borderless"
         title="活动列表"
         extra={
           <Space>

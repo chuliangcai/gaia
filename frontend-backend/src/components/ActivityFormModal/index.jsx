@@ -54,7 +54,7 @@ export default function ActivityFormModal({ open, initial, onCancel, onSubmit })
       onOk={handleOk}
       okText="保存"
       cancelText="取消"
-      destroyOnClose
+      destroyOnHidden
       width={560}
     >
       <Form form={form} layout="vertical" preserve={false}>

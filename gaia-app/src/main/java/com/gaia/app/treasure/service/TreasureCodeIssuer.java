@@ -4,7 +4,7 @@ import com.gaia.common.constants.RedisKeys;
 import com.gaia.domain.member.MemberBenefit;
 import com.gaia.domain.repository.MemberBenefitRepository;
 import com.gaia.domain.service.treasure.TreasureCodeGenerator;
-import com.gaia.app.lock.RedisLock;
+import com.gaia.domain.lock.RedisLock;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;

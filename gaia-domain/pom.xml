@@ -12,12 +12,36 @@
 
     <artifactId>gaia-domain</artifactId>
     <name>gaia-domain</name>
-    <description>Gaia 领域层：领域模型、Repository 抽象、领域服务。不依赖 Spring / MyBatis 等基础设施。</description>
+    <description>Gaia 领域层：领域模型、Repository 抽象、领域服务。允许引入 Spring（context/tx/data-redis）以承载充血模型所需的组件注解，但不允许依赖 MyBatis-Plus / Dubbo 等基础设施。</description>
 
     <dependencies>
         <dependency>
             <groupId>com.gaia</groupId>
             <artifactId>gaia-common</artifactId>
+        </dependency>
+
+        <!-- Spring 注解支持：@Component / @Service / @Scheduled / @Transactional -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+        </dependency>
+
+        <!-- Redis（RedisLock 强依赖 StringRedisTemplate） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
         </dependency>
 
         <!-- 测试：JUnit 5 -->

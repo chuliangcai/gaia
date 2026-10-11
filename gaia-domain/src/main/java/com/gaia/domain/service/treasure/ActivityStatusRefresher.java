@@ -1,4 +1,4 @@
-package com.gaia.app.treasure.service;
+package com.gaia.domain.service.treasure;
 
 import com.gaia.domain.base.activity.Activity;
 import com.gaia.domain.repository.ActivityRepository;

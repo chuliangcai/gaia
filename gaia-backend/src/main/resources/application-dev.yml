@@ -1,6 +1,7 @@
 # =========================================================
 # dev profile：本地开发
-# 配置本地 MySQL 与 Dubbo 消费端配置（backend 只做消费者，不发布服务）。
+# 配置本地 MySQL；Redis（DrawService 手动开奖需要分布式锁）。
+# gaia-backend 不再是 Dubbo 消费端。
 # =========================================================
 
 spring:
@@ -10,6 +11,20 @@ spring:
     password: ${MYSQL_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+      timeout: 2000ms
+      lettuce:
+        pool:
+          enabled: true
+          max-active: 64
+          max-idle: 16
+          min-idle: 4
+
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
@@ -18,22 +33,6 @@ mybatis-plus:
     db-config:
       id-type: AUTO
 
-# ===================== Dubbo（Zookeeper 注册中心，仅消费） =====================
-dubbo:
-  application:
-    name: gaia-backend
-    qos-enable: false
-  registry:
-    address: zookeeper://localhost:2181?timeout=10000
-    register: false
-  consumer:
-    check: false
-    timeout: 5000
-    retries: 0
-  cloud:
-    enabled: false
-
 logging:
   level:
     com.gaia: DEBUG
-    org.apache.dubbo: INFO

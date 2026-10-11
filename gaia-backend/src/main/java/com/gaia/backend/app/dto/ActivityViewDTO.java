@@ -1,4 +1,4 @@
-package com.gaia.api.activity;
+package com.gaia.backend.app.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,4 +1,4 @@
-package com.gaia.app.treasure.service;
+package com.gaia.domain.service.treasure;
 
 import com.gaia.common.constants.RedisKeys;
 import com.gaia.domain.base.activity.ActionType;
@@ -6,13 +6,12 @@ import com.gaia.domain.base.activity.Activity;
 import com.gaia.domain.base.activity.ActivityRecord;
 import com.gaia.domain.draw.DrawCandidate;
 import com.gaia.domain.draw.DrawWinner;
+import com.gaia.domain.lock.RedisLock;
 import com.gaia.domain.member.BenefitType;
 import com.gaia.domain.member.MemberBenefit;
 import com.gaia.domain.repository.ActivityRecordRepository;
 import com.gaia.domain.repository.ActivityRepository;
 import com.gaia.domain.repository.MemberBenefitRepository;
-import com.gaia.domain.service.treasure.WeightedDrawAlgorithm;
-import com.gaia.app.lock.RedisLock;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

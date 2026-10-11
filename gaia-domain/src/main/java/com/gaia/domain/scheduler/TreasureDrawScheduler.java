@@ -1,8 +1,8 @@
-package com.gaia.app.treasure.scheduler;
+package com.gaia.domain.scheduler;
 
 import com.gaia.domain.base.activity.Activity;
-import com.gaia.app.treasure.service.ActivityStatusRefresher;
-import com.gaia.app.treasure.service.DrawService;
+import com.gaia.domain.service.treasure.ActivityStatusRefresher;
+import com.gaia.domain.service.treasure.DrawService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

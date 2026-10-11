@@ -27,9 +27,9 @@ gaia/
 ├── gaia-domain/                      # DDD 领域层（Entity / Repository 接口）
 ├── gaia-app/                         # 应用层：@DubboService / @Service / Mapper / Entity
 ├── gaia-infra/                       # DDD 基础设施层（Mapper / Repository 实现）
-├── gaia-bootstrap/                   # 启动模块：聚合 app + infra，承载 Spring Boot 入口
-├── gaia-gateway/                     # C 端 HTTP 入口（@RestController，端口 8080）
-├── gaia-backend/                     # 后台管理 HTTP 入口（端口 8088）
+├── gaia-bootstrap/                   # 启动模块：聚合 app + infra，承载 Spring Boot 入口（HTTP 8091 + Dubbo Triple 20881）
+├── gaia-gateway/                     # C 端 HTTP 入口（@RestController，端口 8090）
+├── gaia-backend/                     # 后台管理 HTTP 入口（端口 8092）
 ├── frontend-mobile/                  # 移动端 H5（会员中心 + 活动子页）
 └── frontend-backend/                 # 活动管理后台（React + AntD）
 ```
@@ -39,7 +39,7 @@ gaia/
 - gaia-app：**仅** `@DubboService(group="…", version="1.0.0")` 与 `@Service` 等业务注解，**不**含 HTTP 业务注解，**不**含启动类。
 - gaia-bootstrap：唯一启动入口（`com.gaia.bootstrap.GaiaBootstrapApplication`），负责把 gaia-app + gaia-infra 拉到一起。
 - gaia-gateway：**仅** `@RestController`，**不**含业务逻辑。
-- gaia-backend：后台管理进程，端口 8088，鉴权本期不实现。
+- gaia-backend：后台管理进程，端口 8092，鉴权本期不实现。
 - DDD 依赖方向：
   - `gaia-app` → `gaia-domain`、`gaia-api`、`gaia-common`
   - `gaia-bootstrap` → `gaia-app`、`gaia-infra`
@@ -56,16 +56,23 @@ docker run -d --name gaia-mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root mysql:8
 docker run -d --name gaia-redis -p 6379:6379 redis:7
 docker run -d --name gaia-zookeeper -p 2181:2181 zookeeper:latest
 
-# 2. 初始化表（Spring 启动时也会幂等执行）
-mysql -h127.0.0.1 -uroot -proot < gaia-bootstrap/src/main/resources/db/schema.sql
+# 2. 初始化表（Spring 启动时也会幂等执行；MySQL 容器 root 密码以实际启动参数为准）
+mysql -h127.0.0.1 -uroot -p12345 < gaia-bootstrap/src/main/resources/db/schema.sql
 
 # 3. 构建后端
 mvn -DskipTests clean package
 
-# 4. 启动三个进程
-java -jar gaia-bootstrap/target/gaia-bootstrap.jar     # 应用进程（Dubbo Provider + HTTP 8081）
-java -jar gaia-gateway/target/gaia-gateway.jar         # C 端 HTTP，端口 8080
-java -jar gaia-backend/target/gaia-backend.jar         # 管理端 HTTP，端口 8088
+# 4. 启动三个进程（注意 Mac 多网卡环境下必须显式指定 DUBBO_IP_TO_BIND/REGISTRY，见下方"踩坑"）
+SPRING_PROFILES_ACTIVE=dev \
+  DUBBO_IP_TO_BIND=192.168.31.48 DUBBO_IP_TO_REGISTRY=192.168.31.48 \
+  java -jar gaia-bootstrap/target/gaia-bootstrap.jar   # 应用进程（Dubbo Provider + HTTP 8091）
+SPRING_PROFILES_ACTIVE=dev \
+  DUBBO_IP_TO_BIND=192.168.31.48 DUBBO_IP_TO_REGISTRY=192.168.31.48 \
+  java -jar gaia-gateway/target/gaia-gateway.jar       # C 端 HTTP，端口 8090
+SPRING_PROFILES_ACTIVE=dev \
+  DUBBO_IP_TO_BIND=192.168.31.48 DUBBO_IP_TO_REGISTRY=192.168.31.48 \
+  MYSQL_PASSWORD=12345 \
+  java -jar gaia-backend/target/gaia-backend.jar       # 管理端 HTTP，端口 8092
 
 # 或者开发时用 Maven 直接跑（推荐，dev profile 默认连 localhost:2181 上的 ZK）：
 mvn spring-boot:run -pl gaia-bootstrap -am -P dev-bootstrap
@@ -75,18 +82,41 @@ cd frontend-mobile && pnpm install && pnpm dev     # http://localhost:5180
 cd frontend-backend && pnpm install && pnpm dev    # http://localhost:5174
 ```
 
+### 本地启动踩坑（Mac / VPN 多网卡环境必看）
+
+1. **Dubbo IP 解析**：macOS 上有 utun / bridge / anpi 等虚拟网卡，Java `NetworkInterface.getNetworkInterfaces()` 会枚举到这些接口，
+   Dubbo 默认从中挑到的可能是 `28.0.0.1` 之类的无效 IP，导致 Provider 把自身发布到无效地址，Consumer 通过 ZK 拿到该地址后
+   连接超时（`ConnectTimeoutException` / `error code: 6-16`）。启动时必须显式指定本机实际 LAN IP：
+   ```bash
+   DUBBO_IP_TO_BIND=<本机 IP>      # Provider 实际 bind 的地址
+   DUBBO_IP_TO_REGISTRY=<本机 IP>  # 注册到 ZK 时对外公布的地址
+   ```
+   两端保持一致即可。不能用 `127.0.0.1` —— Dubbo 会校验该 IP 必须属于本机某张网卡，loopback 被拒。
+
+2. **MySQL / Redis 密码与端口**：
+   - `gaia-bootstrap` 的 dev 配置默认 `MYSQL_PASSWORD=12345`，与本仓库 docker-compose 起的 MySQL 一致，**无需**额外参数。
+   - `gaia-backend` 的 dev 配置默认 `MYSQL_PASSWORD=root`，需要覆盖：`MYSQL_PASSWORD=12345`。
+   - 若 Redis 容器把 6379 映射到了宿主 `6380`，需 `REDIS_PORT=6380`（dev 配置默认值是 6379）。
+
+3. **Docker 启动示例（端口映射按本机实际为准）**：
+   ```bash
+   docker run -d --name gaia-mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=12345 mysql:8.0
+   docker run -d --name gaia-redis -p 6380:6379 redis:7        # 宿主 6380 → 容器 6379
+   docker run -d --name gaia-zookeeper -p 2181:2181 zookeeper:latest
+   ```
+
 ## 验证接口
 
 ```bash
-# 玩法统一入口（新版）
-curl -XPOST 'http://localhost:8080/api/interact' -H 'Content-Type: application/json' \
+# 玩法统一入口（新版，gaia-gateway HTTP 端口 = 8090）
+curl -XPOST 'http://localhost:8090/api/interact' -H 'Content-Type: application/json' \
   -d '{"bizCode":"sign","userId":1001,"models":[{"assertType":"sign_do","subType":""}]}'
 
-# Prometheus 指标
-curl 'http://localhost:8080/actuator/prometheus'
+# Prometheus 指标（gaia-gateway）
+curl 'http://localhost:8090/actuator/prometheus'
 
-# 管理端 - 活动列表（需 gaia-backend 已启动）
-curl 'http://localhost:8088/api/admin/activity/list'
+# 管理端 - 活动列表（需 gaia-backend 已启动，端口 8092）
+curl 'http://localhost:8092/api/admin/activity/list'
 ```
 
 ## K8s 部署

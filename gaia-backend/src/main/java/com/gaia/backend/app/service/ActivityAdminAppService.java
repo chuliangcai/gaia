@@ -1,22 +1,20 @@
-package com.gaia.app.service.impl;
+package com.gaia.backend.app.service;
 
-import com.gaia.api.activity.ActivityAdminService;
-import com.gaia.api.activity.ActivityCreateRequest;
-import com.gaia.api.activity.ActivityUpdateRequest;
-import com.gaia.api.activity.ActivityViewDTO;
-import com.gaia.api.activity.MemberSeedDTO;
-import com.gaia.api.activity.TaskConfigDTO;
-import com.gaia.common.constants.DubboConstants;
+import com.gaia.backend.app.dto.ActivityCreateRequest;
+import com.gaia.backend.app.dto.ActivityUpdateRequest;
+import com.gaia.backend.app.dto.ActivityViewDTO;
+import com.gaia.backend.app.dto.MemberSeedDTO;
+import com.gaia.backend.app.dto.TaskConfigDTO;
 import com.gaia.domain.base.activity.Activity;
 import com.gaia.domain.base.activity.ActivityTask;
 import com.gaia.domain.member.Member;
 import com.gaia.domain.repository.ActivityRepository;
 import com.gaia.domain.repository.ActivityTaskRepository;
 import com.gaia.domain.repository.MemberRepository;
-import com.gaia.app.treasure.service.DrawService;
+import com.gaia.domain.service.treasure.DrawService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.dubbo.config.annotation.DubboService;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -25,19 +23,22 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 活动管理 Dubbo Provider（后台管理调用入口）。
+ * 活动管理后台应用服务。
+ *
+ * <p>直接编排 gaia-domain 仓储与领域服务（DrawService），不再走 Dubbo。
+ * 与早期 {@code com.gaia.app.service.impl.ActivityAdminServiceImpl}（已删除并被本类替换）的
+ * 行为完全等价，便于前端 wire 形态保持不变。</p>
  */
 @Slf4j
-@DubboService(group = DubboConstants.GROUP, version = DubboConstants.VERSION)
+@Service
 @RequiredArgsConstructor
-public class ActivityAdminServiceImpl implements ActivityAdminService {
+public class ActivityAdminAppService {
 
     private final ActivityRepository activityRepository;
     private final ActivityTaskRepository activityTaskRepository;
     private final MemberRepository memberRepository;
     private final DrawService drawService;
 
-    @Override
     public Long createActivity(ActivityCreateRequest req) {
         if (req == null || req.getActivityCode() == null) {
             throw new IllegalArgumentException("activityCode 必填");
@@ -57,7 +58,6 @@ public class ActivityAdminServiceImpl implements ActivityAdminService {
         return saved.getId();
     }
 
-    @Override
     public void updateActivity(Long id, ActivityUpdateRequest req) {
         if (id == null || req == null) {
             throw new IllegalArgumentException("id 与 req 必填");
@@ -86,14 +86,12 @@ public class ActivityAdminServiceImpl implements ActivityAdminService {
         log.info("更新活动 id={}", id);
     }
 
-    @Override
     public List<ActivityViewDTO> listActivities() {
         return activityRepository.findAll().stream()
-                .map(ActivityAdminServiceImpl::toView)
+                .map(ActivityAdminAppService::toView)
                 .collect(Collectors.toList());
     }
 
-    @Override
     public void deleteActivity(Long id) {
         if (id == null) {
             throw new IllegalArgumentException("id 必填");
@@ -135,7 +133,6 @@ public class ActivityAdminServiceImpl implements ActivityAdminService {
                 .build();
     }
 
-    @Override
     public void configureTasks(Long activityId, List<TaskConfigDTO> tasks) {
         if (activityId == null) {
             throw new IllegalArgumentException("activityId 必填");
@@ -161,7 +158,6 @@ public class ActivityAdminServiceImpl implements ActivityAdminService {
         log.info("配置任务完成 activityId={} size={}", activityId, n);
     }
 
-    @Override
     public void triggerDraw(Long activityId) {
         if (activityId == null) {
             throw new IllegalArgumentException("activityId 必填");
@@ -170,7 +166,6 @@ public class ActivityAdminServiceImpl implements ActivityAdminService {
         drawService.draw(activityId);
     }
 
-    @Override
     public void seedMembers(List<MemberSeedDTO> members) {
         if (members == null || members.isEmpty()) {
             return;
