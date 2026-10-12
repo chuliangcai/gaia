@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Modal, Form, Input, DatePicker, Select, Checkbox, Tag, Empty, message } from 'antd';
+import { Modal, Form, Input, DatePicker, Select, Checkbox, Tag, Empty, message, Tooltip } from 'antd';
+import { QuestionCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { STATUS_OPTIONS } from '../../api/activity.js';
 import { listGames, listAbilities } from '../../api/meta.js';
@@ -249,16 +250,26 @@ export default function ActivityFormModal({ open, initial, onCancel, onSubmit })
 
         <Form.Item
           name="abilities"
-          label="能力（可多选）"
           rules={[{ required: true, message: '请至少选择一个能力', type: 'array', min: 1 }]}
-          tooltip="能力按所属域（@Ability.bizNs）分组展示；勾选后按 configClassName 去重联动渲染配置子表单"
+          noStyle
         >
-          {/* 占位：Form.Item 必须有 child 才能挂 cloneElement。
-              真正可视的勾选 UI 放在下方的兄弟节点里 ——
-              如果直接把 UI 放进来，Form.Item 会 cloneElement 把 onChange 注入到我们的容器 div，
-              勾选 checkbox 时事件冒泡到容器，Antd 用 e.target.value="on" 覆盖掉我们 setFieldsValue 的数组。 */}
+          {/* 占位：noStyle 模式下 Form.Item 不渲染任何 chrome（label / control wrapper），
+              只保留字段注册和校验，真正可视的勾选 UI 放在下方兄弟节点里。
+              如果直接把 UI 放进 Form.Item，Antd 会 cloneElement 把 onChange 注入容器 div，
+              勾选 checkbox 时事件冒泡被 e.target.value="on" 覆盖掉 setFieldsValue 的数组。 */}
           <span aria-hidden style={{ display: 'none' }} />
         </Form.Item>
+
+        {/* 手画的 label：替代 noStyle 丢失的 label 槽位（含必填星号 + tooltip） */}
+        <div style={{ marginBottom: 8 }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ color: '#ff4d4f' }}>*</span>
+            <span style={{ color: 'rgba(0,0,0,0.85)' }}>能力（可多选）</span>
+            <Tooltip title="能力按所属域（@Ability.bizNs）分组展示；勾选后按 configClassName 去重联动渲染配置子表单">
+              <QuestionCircleOutlined style={{ color: 'rgba(0,0,0,0.45)', cursor: 'help' }} />
+            </Tooltip>
+          </span>
+        </div>
 
         {/* 可视 UI：脱离 Form.Item 的 FieldContext，cloneElement 不再干扰勾选事件。 */}
         <div data-testid="abilities-list">

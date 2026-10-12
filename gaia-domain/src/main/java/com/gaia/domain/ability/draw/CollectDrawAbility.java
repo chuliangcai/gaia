@@ -210,7 +210,7 @@ public class CollectDrawAbility extends AbstractBaseAbility {
         }
 
         List<DrawWinner> winners = drawAlgorithm.draw(candidates, totalPrizeCount);
-        // 给每个中奖者从其夺宝码集合中取一条作为中奖码（与原 DrawService 行为对齐）
+        // 给每个中奖者从其夺宝码集合中取一条作为中奖码
         for (DrawWinner w : winners) {
             List<String> userCodes = memberBenefitRepository
                     .listLotteryCodesByUserAndActivity(w.getUserId(), ec.activityId);

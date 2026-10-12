@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @SpringBootApplication(scanBasePackages = {
         "com.gaia.bootstrap",
         "com.gaia.app",
-        "com.gaia.domain",   // 扫描已下沉到 domain 的 @Component / @Service Bean（RedisLock / DrawService / ActivityStatusRefresher / TreasureDrawScheduler）
+        "com.gaia.domain",   // 扫描已下沉到 domain 的 @Component / @Service Bean（RedisLock / ActivityStatusRefresher + 领域能力 CollectDrawAbility）
         "com.gaia.infra",
         "com.gaia.common",
         "com.gaia.api"

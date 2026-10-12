@@ -24,9 +24,8 @@ import java.util.Set;
  *   <li>重复直到抽够 winnerCount 名或候选池空</li>
  * </ol>
  */
-// TODO 临时：集夺宝码开奖是“能力”，按项目词汇应该走 @Ability / 能力注册中心，
-// 当前 DrawService 还在 gaia-domain，只能先 @Component 让 Spring 能注入。
-// 见 [[gaia-design-intent]] 与 [[gaia-app-scope]] 的依赖方向调整后再迁移。
+// 算法只做加权不放回抽样，不感知调用方形态。
+// 集奖开奖已沉淀为 @Ability(COLLECT_DRAW)，由本模块内 CollectDrawAbility 调用本算法。
 @Component
 public class WeightedDrawAlgorithm {
 

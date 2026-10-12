@@ -7,7 +7,6 @@ import com.gaia.backend.app.dto.ActivityUpdateRequest;
 import com.gaia.backend.app.dto.ActivityViewDTO;
 import com.gaia.domain.base.activity.Activity;
 import com.gaia.domain.repository.ActivityRepository;
-import com.gaia.domain.service.treasure.DrawService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,8 +19,12 @@ import java.util.stream.Collectors;
 /**
  * 活动管理后台应用服务。
  *
- * <p>直接编排 gaia-domain 仓储与领域服务（DrawService），不再走 Dubbo。
- * 与早期 {@code com.gaia.app.service.impl.ActivityAdminServiceImpl}（已删除并被本类替换）的
+ * <p>只负责活动本体的 CRUD，不感知任何具体业务能力（开奖、会员领奖等都是
+ * 独立的"XxxAdminAppService"，各自挂各自的领域能力）。
+ * 直接编排 gaia-domain 仓储，不再走 Dubbo；也不再保留任何领域能力端口（{@code @Ability}），
+ * 避免与具体业务耦合。</p>
+ *
+ * <p>与早期 {@code com.gaia.app.service.impl.ActivityAdminServiceImpl}（已删除并被本类替换）的
  * 行为保持兼容；本版本不再单独管理 {@code gaia_activity_task} 表，
  * 任务清单走活动行的 {@code configurations} JSON（key=configClass FQN）。</p>
  */
@@ -31,7 +34,6 @@ import java.util.stream.Collectors;
 public class ActivityAdminAppService {
 
     private final ActivityRepository activityRepository;
-    private final DrawService drawService;
     private final ObjectMapper objectMapper;
 
     public Long createActivity(ActivityCreateRequest req) {
@@ -112,14 +114,6 @@ public class ActivityAdminAppService {
                 .status(viewStatus)
                 .configurations(parseConfig(a.getConfigurations()))
                 .build();
-    }
-
-    public void triggerDraw(Long activityId) {
-        if (activityId == null) {
-            throw new IllegalArgumentException("activityId 必填");
-        }
-        log.info("管理端手动触发开奖 activityId={}", activityId);
-        drawService.draw(activityId);
     }
 
     // ---------- status 映射（UI ↔ 领域） ----------
