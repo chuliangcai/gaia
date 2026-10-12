@@ -59,6 +59,20 @@
 
         <!-- OTLP 默认端点：OTLP/HTTP，端口 4318（grafana/otel-lgtm 与 Jaeger 均原生支持）；运行时由 OTEL_EXPORTER_OTLP_TRACES_ENDPOINT 覆盖 -->
         <otel.exporter.otlp.traces.endpoint>http://127.0.0.1:4318/v1/traces</otel.exporter.otlp.traces.endpoint>
+
+        <!--
+          Dubbo 反序列化白名单（dev 三个 profile 共用）。
+          背景：Dubbo 3.2.9 + fastjson2 默认开启 STRICT 反序列化安全策略，
+          任何出现在 IFResult.model 等泛型容器中的业务 DTO 都必须显式列进
+          -Ddubbo.security.serialize.allowedClassList（逗号分隔全限定名）
+          才能跨 RPC 解析。
+          Dubbo 的 classpath 资源 security/serialize.allowlist 走的是
+          alwaysAllowedPrefix（不参与 Handler 的 prefix 匹配），无法满足本
+          需求；只能走 JVM 属性。
+          注意：仅业务输出 DTO 需要加入；入参 / 配置类（gaia_activity.
+          configurations 内的 JSON）走 DB，不经 Dubbo。
+        -->
+        <dubbo.allowed.class.list>com.gaia.domain.ability.task.dto.TaskDTO,com.gaia.domain.ability.task.dto.TaskExecuteResultDTO,com.gaia.domain.ability.task.dto.RewardIssueResult,com.gaia.domain.ability.draw.dto.CollectDrawResultDTO,com.gaia.api.activity.ActivitySummaryDTO,com.gaia.api.member.MemberSummaryDTO</dubbo.allowed.class.list>
     </properties>
 
     <dependencyManagement>
@@ -276,7 +290,7 @@
                 <spring.profiles.active>dev</spring.profiles.active>
                 <otel.exporter.otlp.traces.endpoint>http://127.0.0.1:4318/v1/traces</otel.exporter.otlp.traces.endpoint>
                 <jvm.add-opens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED</jvm.add-opens>
-                <spring-boot.jvmArguments>${jvm.add-opens} -Dspring.profiles.active=${spring.profiles.active} -DOTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${otel.exporter.otlp.traces.endpoint} -DMYSQL_PASSWORD=12345</spring-boot.jvmArguments>
+                <spring-boot.jvmArguments>${jvm.add-opens} -Dspring.profiles.active=${spring.profiles.active} -DOTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${otel.exporter.otlp.traces.endpoint} -DMYSQL_PASSWORD=12345 -Ddubbo.security.serialize.allowedClassList=${dubbo.allowed.class.list}</spring-boot.jvmArguments>
             </properties>
         </profile>
 
@@ -288,7 +302,7 @@
                 <spring.profiles.active>dev</spring.profiles.active>
                 <otel.exporter.otlp.traces.endpoint>http://127.0.0.1:4318/v1/traces</otel.exporter.otlp.traces.endpoint>
                 <jvm.add-opens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED</jvm.add-opens>
-                <spring-boot.jvmArguments>${jvm.add-opens} -Dspring.profiles.active=${spring.profiles.active} -DOTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${otel.exporter.otlp.traces.endpoint}</spring-boot.jvmArguments>
+                <spring-boot.jvmArguments>${jvm.add-opens} -Dspring.profiles.active=${spring.profiles.active} -DOTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${otel.exporter.otlp.traces.endpoint} -Ddubbo.security.serialize.allowedClassList=${dubbo.allowed.class.list}</spring-boot.jvmArguments>
             </properties>
         </profile>
 
@@ -301,7 +315,7 @@
                 <otel.exporter.otlp.traces.endpoint>http://127.0.0.1:4318/v1/traces</otel.exporter.otlp.traces.endpoint>
                 <dubbo.registry.register>false</dubbo.registry.register>
                 <jvm.add-opens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED</jvm.add-opens>
-                <spring-boot.jvmArguments>${jvm.add-opens} -Dspring.profiles.active=${spring.profiles.active} -Ddubbo.registry.register=${dubbo.registry.register} -DOTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${otel.exporter.otlp.traces.endpoint} -DMYSQL_PASSWORD=12345</spring-boot.jvmArguments>
+                <spring-boot.jvmArguments>${jvm.add-opens} -Dspring.profiles.active=${spring.profiles.active} -Ddubbo.registry.register=${dubbo.registry.register} -DOTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${otel.exporter.otlp.traces.endpoint} -DMYSQL_PASSWORD=12345 -Ddubbo.security.serialize.allowedClassList=${dubbo.allowed.class.list}</spring-boot.jvmArguments>
             </properties>
         </profile>
     </profiles>

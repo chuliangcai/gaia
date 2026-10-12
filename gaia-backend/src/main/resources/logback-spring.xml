@@ -7,14 +7,39 @@
       backend 暂未引入 opentelemetry-logback-mdc-1.0 依赖（按需添加），当前 pattern 留出
       trace_id / span_id 占位以与 gateway / server 输出对齐。
     -->
+    <property name="LOG_PATTERN"
+              value="%d{HH:mm:ss.SSS} [%thread] [trace_id=%X{trace_id:-} span_id=%X{span_id:-}] %-5level %logger{36} - %msg%n"/>
+    <property name="LOG_PATH" value="${LOG_PATH:-logs}"/>
+    <!-- spring.application.name 在 logback 初始化时尚不可用，这里写死默认值；可用 LOG_FILE 环境变量覆盖 -->
+    <property name="LOG_FILE" value="${LOG_FILE:-gaia-backend}"/>
+
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] [trace_id=%X{trace_id:-} span_id=%X{span_id:-}] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!--
+      文件输出：${LOG_PATH}/${LOG_FILE}.log，默认 logs/gaia-backend.log。
+      通过环境变量 LOG_PATH / LOG_FILE 覆盖；按 50MB / 天滚动，保留 7 天、上限 1GB。
+    -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${LOG_FILE}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${LOG_FILE}.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>7</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
             <charset>UTF-8</charset>
         </encoder>
     </appender>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
     </root>
 </configuration>

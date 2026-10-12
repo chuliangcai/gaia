@@ -108,6 +108,133 @@
   color: #fff;
 }
 
+.treasure-hunt__tasks {
+  margin-top: 14px;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 4px 14px rgba(255, 77, 109, 0.08);
+}
+
+.treasure-hunt__tasks-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 10px;
+  color: #2b2235;
+}
+
+.treasure-hunt__tasks-empty {
+  padding: 18px 0;
+  font-size: 13px;
+  color: #9a8a96;
+  text-align: center;
+}
+
+.treasure-hunt__task-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.treasure-hunt__task {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #fff7f9;
+  border: 1px solid #ffd6df;
+  border-radius: 10px;
+  padding: 10px 12px;
+  transition: opacity 0.2s ease;
+}
+
+.treasure-hunt__task--done {
+  background: #f3f3f5;
+  border-color: #e6e6ea;
+  opacity: 0.7;
+}
+
+.treasure-hunt__task-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.treasure-hunt__task-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2b2235;
+}
+
+.treasure-hunt__task-desc {
+  font-size: 12px;
+  color: #8a7180;
+  margin-top: 2px;
+  line-height: 1.5;
+  word-break: break-all;
+}
+
+.treasure-hunt__task-progress {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6b4a5d;
+}
+
+.treasure-hunt__task-reward {
+  color: #ff4d6d;
+  font-weight: 600;
+}
+
+.treasure-hunt__task-status {
+  flex: 0 0 auto;
+}
+
+.treasure-hunt__task-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.treasure-hunt__task-tag--avail {
+  background: linear-gradient(135deg, #ff8fa3 0%, #ff4d6d 100%);
+  color: #fff;
+}
+
+.treasure-hunt__task-tag--done {
+  background: #e6e6ea;
+  color: #8a8a92;
+}
+
+.treasure-hunt__toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) + 32px);
+  transform: translateX(-50%);
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  background: rgba(43, 34, 53, 0.92);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.treasure-hunt__toast--success {
+  background: rgba(255, 77, 109, 0.95);
+}
+
+.treasure-hunt__toast--warn {
+  background: rgba(60, 40, 50, 0.92);
+}
+
 .treasure-hunt__rules {
   margin-top: 14px;
   background: rgba(255, 255, 255, 0.6);
