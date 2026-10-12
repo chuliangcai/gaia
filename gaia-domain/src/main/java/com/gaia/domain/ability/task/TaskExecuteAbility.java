@@ -46,7 +46,7 @@ import java.util.Optional;
  *     作为幂等键，命中已存在记录时返回上次结果（idempotent=true）。</li>
  *     <li>{@link #issueReward(RequestContext) issueReward} —
  *     通过扩展点（{@code TaskRewardIssueExt}）为该用户发放夺宝码等权益；
- *     会员夺宝玩法下由 {@code TreasureBizProduct.issuance(...)} 1:1 委托给
+ *     会员夺宝玩法下由 {@code TreasureBizProduct.issue(...)} 1:1 委托给
  *     {@code TreasureCodeIssuer.issue(...)}。</li>
  * </ol>
  *

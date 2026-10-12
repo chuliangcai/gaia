@@ -3,6 +3,7 @@ package com.gaia.app.bizproduct.treasure;
 import com.gaia.domain.ability.draw.ext.CalculateProbabilityExt;
 import com.gaia.domain.ability.draw.ext.IssuePrizeExt;
 import com.gaia.domain.ability.task.dto.RewardIssueResult;
+import com.gaia.domain.ability.treasure.ext.TaskRewardIssueExt;
 import com.gaia.domain.base.activity.Activity;
 import com.gaia.domain.draw.DrawCandidate;
 import com.gaia.domain.draw.DrawWinner;
@@ -63,7 +64,7 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 @BizProduct(code = "treasure", name = "会员夺宝")
-public class TreasureBizProduct implements CalculateProbabilityExt, IssuePrizeExt {
+public class TreasureBizProduct implements CalculateProbabilityExt, IssuePrizeExt, TaskRewardIssueExt {
 
     private final TreasureCodeIssuer treasureCodeIssuer;
     private final MemberBenefitRepository memberBenefitRepository;
@@ -82,8 +83,9 @@ public class TreasureBizProduct implements CalculateProbabilityExt, IssuePrizeEx
      * （夺宝码仅在所属活动内生效）。</p>
      */
     @Extension(code = "issuance", name = "任务奖励发放")
-    public List<RewardIssueResult> issuance(Long userId, Long activityId, int count, Long sourceId) {
-        log.debug("TreasureBizProduct.issuance userId={} activityId={} count={} sourceId={}",
+    @Override
+    public List<RewardIssueResult> issue(Long userId, Long activityId, int count, Long sourceId) {
+        log.debug("TreasureBizProduct.issue userId={} activityId={} count={} sourceId={}",
                 userId, activityId, count, sourceId);
         // 只生成候选码；账本写入（sourceId 已透传给 issueReward）由领域层统一负责
         List<String> codes = treasureCodeIssuer.issue(count);
