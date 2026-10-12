@@ -9,20 +9,9 @@ import { http } from './client.js';
  *   其中 Activity = { id, name, link, startTime, endTime, status }
  *   status: 0=草稿 1=已上架 2=已下架
  *
- * 兼容：当后端暂未提供 /api/activities 时，getActivities 会回退到内置的占位数据，
- * 保证前端能跑通 demo。接入正式 gateway 后会优先返回服务端数据。
+ * 过滤口径由后端把控：{@code status ∈ {1,2} AND start_time <= now < end_time}，
+ * 移动端不再做兜底/mock，调用方拿到空数组即视为"暂无活动"。
  */
-
-const PLACEHOLDER = [
-  {
-    id: 1001,
-    name: '会员夺宝',
-    link: '/treasure/1001',
-    startTime: '2026-01-01 00:00:00',
-    endTime: '2026-12-31 23:59:59',
-    status: 1,
-  },
-];
 
 function unwrap(res) {
   if (res == null) return null;
@@ -34,16 +23,9 @@ function unwrap(res) {
 }
 
 export async function getActivities() {
-  try {
-    const res = await http.get('/activities');
-    const data = unwrap(res);
-    if (Array.isArray(data) && data.length > 0) return data;
-    return PLACEHOLDER;
-  } catch (e) {
-    // 网络/网关未启动等异常时回退到占位数据
-    if (e && (e.status === 404 || e.name === 'AbortError')) return PLACEHOLDER;
-    return PLACEHOLDER;
-  }
+  const res = await http.get('/activities');
+  const data = unwrap(res);
+  return Array.isArray(data) ? data : [];
 }
 
 export async function getActivity(id) {

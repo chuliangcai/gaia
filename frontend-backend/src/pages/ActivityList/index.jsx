@@ -170,10 +170,10 @@ export default function ActivityList() {
     {
       title: '操作',
       key: 'action',
-      width: 160,
+      width: 250,
       fixed: 'right',
       render: (_, record) => (
-        <Space size="small">
+        <Space size="small" wrap>
           <Button
             type="link"
             size="small"
@@ -229,7 +229,7 @@ export default function ActivityList() {
           dataSource={data}
           loading={loading}
           pagination={{ pageSize: 10, showSizeChanger: true }}
-          scroll={{ x: 1000 }}
+          scroll={{ x: 1100 }}
         />
       </Card>
 

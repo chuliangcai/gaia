@@ -53,29 +53,14 @@ export default function ActivityFormModal({ open, initial, onCancel, onSubmit })
     return () => { cancelled = true; };
   }, [open]);
 
-  // 初始化 / 回填
+  // 初始化 / 回填。
+// 拆成两步：基础字段（活动标题 / 时间 / 玩法 / 状态等）一打开就写；
+// 动态字段（abilities、abilityConfigs）必须等到 meta 加载完再做，且整个
+// 会话只写一次 — 重复对同一个嵌套路径调用 setFieldsValue 会触发 antd 5
+// 的 Form.List 字段清空（编辑场景：先读出 2 行、紧接着变成 0 行）。
   useEffect(() => {
     if (!open) return;
     if (initial) {
-      const cfg = initial.configurations || {};
-      // 优先用表单显式写入的 ability 编码集合（覆盖 Void-config ability
-      // 不留 configurations 痕迹、无法反推的情况）。__ 前缀视为本表单私有元数据。
-      let codes;
-      if (Array.isArray(cfg.__abilityCodes__)) {
-        codes = cfg.__abilityCodes__.filter((c) => typeof c === 'string');
-      } else {
-        // 兼容旧数据：仅按 configClassName 反推
-        const classNames = new Set(
-          Object.keys(cfg).filter((k) => !k.startsWith('__')),
-        );
-        codes = (abilities || [])
-          .filter((a) => classNames.has(a.configClassName))
-          .map((a) => a.code);
-      }
-      // 回填时剔除私有元数据，避免子表单误把它当 schema 渲染
-      const abilityConfigs = Object.fromEntries(
-        Object.entries(cfg).filter(([k]) => !k.startsWith('__')),
-      );
       form.setFieldsValue({
         name: initial.name,
         coverUrl: initial.coverUrl,
@@ -86,13 +71,40 @@ export default function ActivityFormModal({ open, initial, onCancel, onSubmit })
             : null,
         status: initial.status,
         bizCode: initial.bizCode || undefined,
-        abilities: codes,
-        abilityConfigs,
       });
     } else {
       form.resetFields();
       form.setFieldsValue({ status: 1, abilities: [] });
     }
+  }, [open, initial, form]);
+
+  // abilities / abilityConfigs 必须在元数据加载完再写，且只写一次。
+  useEffect(() => {
+    if (!open || !initial) return;
+    if ((abilities || []).length === 0) return;
+    const cfg = initial.configurations || {};
+    // 优先用表单显式写入的 ability 编码集合（覆盖 Void-config ability
+    // 不留 configurations 痕迹、无法反推的情况）。__ 前缀视为本表单私有元数据。
+    let codes;
+    if (Array.isArray(cfg.__abilityCodes__)) {
+      codes = cfg.__abilityCodes__.filter((c) => typeof c === 'string');
+    } else {
+      const classNames = new Set(
+        Object.keys(cfg).filter((k) => !k.startsWith('__')),
+      );
+      codes = abilities.filter((a) => classNames.has(a.configClassName)).map((a) => a.code);
+    }
+    const abilityConfigs = Object.fromEntries(
+      Object.entries(cfg).filter(([k]) => !k.startsWith('__')),
+    );
+    // 守卫：已经回填过就不再写，避免重复 setFieldsValue 把 Form.List 的
+    // 子字段清空。
+    const cur = form.getFieldValue('abilities') || [];
+    if (Array.isArray(cur) && cur.length === codes.length &&
+        cur.slice().sort().join(',') === codes.slice().sort().join(',')) {
+      return;
+    }
+    form.setFieldsValue({ abilities: codes, abilityConfigs });
   }, [open, initial, abilities, form]);
 
   // 按 configClassName 去重；同一 configClass 被多个 ability 共用时只渲染一份
@@ -155,8 +167,21 @@ export default function ActivityFormModal({ open, initial, onCancel, onSubmit })
     }
     const [start, end] = values.timeRange || [];
 
+    // 提交时只保留"当前还勾选着"的能力对应的配置 key：
+    // antd Form 默认 preserve=true，用户在弹窗内取消勾选一个能力后，其 Form.Item
+    // 卸载但值仍在 store 里；不裁剪会把已经取消的能力的旧配置（幽灵数据）一起
+    // 写回后端。distinctConfigs 里只有当前可见、非 Void 的 configClass。
+    const allowedClassNames = new Set(
+      (selectedCodes || [])
+        .map((code) => abilities.find((x) => x.code === code)?.configClassName)
+        .filter((n) => n && n !== 'java.lang.Void'),
+    );
+    const abilityConfigsFiltered = Object.fromEntries(
+      Object.entries(values.abilityConfigs || {}).filter(([k]) => allowedClassNames.has(k)),
+    );
+
     // 把 abilityConfigs 里所有 dayjs 转成字符串（避免 Jackson 收到 dayjs 实例）
-    const configurations = stringifyDates(values.abilityConfigs || {});
+    const configurations = stringifyDates(abilityConfigsFiltered);
     // 把选中的 ability code 列表一起序列化进 configurations（用 __ 前缀避开
     // 与 configClass FQN key 的命名冲突）。Void-config ability
     // （如 treasure_draw，configClassName=java.lang.Void）不会在 configurations
@@ -192,7 +217,7 @@ export default function ActivityFormModal({ open, initial, onCancel, onSubmit })
       width={720}
       confirmLoading={loadingMeta}
     >
-      <Form form={form} layout="vertical" preserve={false}>
+      <Form form={form} layout="vertical">
         <Form.Item
           name="name"
           label="活动标题"
@@ -372,12 +397,17 @@ export default function ActivityFormModal({ open, initial, onCancel, onSubmit })
                 （{sharedAbilities.map((a) => a.code).join(' / ')} 共用）
               </span>
             </div>
-            <Form.Item name={['abilityConfigs', className]} style={{ marginBottom: 0 }}>
-              <AbilityConfigForm
-                schema={schema}
-                formPath={['abilityConfigs', className]}
-              />
-            </Form.Item>
+            {/*
+              不要在这层套 <Form.Item name={['abilityConfigs', className]}>；
+              AbilityConfigForm 内部已经用同样的 formPath 把每个字段（包含 Form.List
+              和 Form.Item）注册到根 Form 上，外层再包同名 Form.Item 会让 antd 5
+              对同 name 路径产生双重 owner，回填时外层抢到注册、内层拿不到初值，
+              而且会让 Form.List 的 fields 列表在编辑场景下变成空。
+            */}
+            <AbilityConfigForm
+              schema={schema}
+              formPath={['abilityConfigs', className]}
+            />
           </div>
         ))}
       </Form>

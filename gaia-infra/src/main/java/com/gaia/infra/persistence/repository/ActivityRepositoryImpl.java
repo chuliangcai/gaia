@@ -55,6 +55,19 @@ public class ActivityRepositoryImpl implements ActivityRepository {
     }
 
     @Override
+    public List<Activity> findLive(LocalDateTime now) {
+        QueryWrapper<ActivityPO> qw = new QueryWrapper<>();
+        qw.in("status", 1, 2); // ONGOING / WAITING_DRAW
+        // 时间窗：start_time <= now AND end_time > now，与 findStartingAt (<=) / findEndingAt (<=) 互补
+        qw.le("start_time", now);
+        qw.gt("end_time", now);
+        qw.orderByDesc("id");
+        return mapper.selectList(qw).stream()
+                .map(ActivityRepositoryImpl::toEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public Activity save(Activity activity) {
         ActivityPO po = toPO(activity);
         if (po.getId() == null) {

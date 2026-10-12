@@ -1,7 +1,7 @@
 /**
  * fetch 封装：统一前缀、统一 JSON、超时与错误处理。
  *
- * 所有请求都走相对路径 /api/*，由 vite dev server 或生产网关代理到 gaia-gateway (8080)。
+ * 所有请求都走相对路径 /api/*，由 vite dev server 或生产网关代理到 gaia-gateway（8090）。
  */
 const BASE = '/api';
 const DEFAULT_TIMEOUT_MS = 8000;
