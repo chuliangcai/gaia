@@ -63,7 +63,7 @@ import java.util.Optional;
  */
 @Slf4j
 @Component
-@Ability(code = "collect_draw", bizNs = "draw", name = "集奖开奖", configClass = CollectDrawConfig.class)
+@Ability(code = "collect_draw", bizNs = "draw", name = "集奖开奖", configClass = CollectDrawConfig.class, backendTriggerable = true)
 @RequiredArgsConstructor
 public class CollectDrawAbility extends AbstractBaseAbility {
 

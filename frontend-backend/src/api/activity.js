@@ -4,11 +4,12 @@ import axios from 'axios';
  * 活动管理 API（后台管理端 → gaia-backend :8088）。
  *
  * 后端契约：
- *   GET    /api/admin/activity/list       活动列表
- *   POST   /api/admin/activity           新增活动
- *   PUT    /api/admin/activity/:id       更新活动
- *   DELETE /api/admin/activity/:id       删除活动
- *   POST   /api/admin/activity/:id/draw  手动开奖（保留）
+ *   GET    /api/admin/activity/list              活动列表
+ *   POST   /api/admin/activity                  新增活动
+ *   PUT    /api/admin/activity/:id              更新活动
+ *   DELETE /api/admin/activity/:id              删除活动
+ *   POST   /api/admin/activity/:id/draw         手动开奖（保留，硬编码 draw）
+ *   POST   /api/admin/activity/:id/ability/:code 通用触发能力（@Ability.backendTriggerable=true）
  *
  * 字段：id, name, link, startTime, endTime, status(0=草稿 1=上架 2=下架)
  */
@@ -104,6 +105,17 @@ export async function deleteActivity(id) {
     // mock 下也走兜底
   }
   MOCK = MOCK.filter((it) => it.id !== id);
+}
+
+/**
+ * 对指定活动触发指定能力。后端会校验该能力的 @Ability.backendTriggerable=true。
+ * 成功返回 { activityId, code }，失败抛 Error。
+ */
+export async function triggerAbility(activityId, code) {
+  const data = unwrap(
+    await http.post(`/admin/activity/${activityId}/ability/${encodeURIComponent(code)}`),
+  );
+  return data ?? { activityId, code };
 }
 
 export const STATUS_OPTIONS = [

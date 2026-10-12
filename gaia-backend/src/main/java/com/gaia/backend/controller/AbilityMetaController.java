@@ -35,6 +35,16 @@ public class AbilityMetaController {
         return Result.success(abilityMetaService.listAbilities(bizNs));
     }
 
+    @GetMapping("/triggerable")
+    @Operation(summary = "列出所有可由后台触发的管理端调用的能力（@Ability.backendTriggerable=true）")
+    public Result<List<AbilityDescriptor>> listTriggerable() {
+        List<AbilityDescriptor> all = abilityMetaService.listAbilities();
+        List<AbilityDescriptor> triggerable = all.stream()
+                .filter(d -> d != null && d.isBackendTriggerable())
+                .toList();
+        return Result.success(triggerable);
+    }
+
     @GetMapping("/{code}")
     @Operation(summary = "按 code 取单条能力元数据")
     public Result<AbilityDescriptor> get(@PathVariable String code) {

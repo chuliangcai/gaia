@@ -3,6 +3,7 @@ package com.gaia.backend.controller;
 import com.gaia.backend.app.dto.ActivityCreateRequest;
 import com.gaia.backend.app.dto.ActivityUpdateRequest;
 import com.gaia.backend.app.dto.ActivityViewDTO;
+import com.gaia.backend.app.service.AbilityTriggerAppService;
 import com.gaia.backend.app.service.ActivityAdminAppService;
 import com.gaia.backend.app.service.DrawAdminAppService;
 import com.gaia.common.dto.Result;
@@ -42,6 +43,7 @@ public class ActivityAdminController {
 
     private final ActivityAdminAppService activityAdminAppService;
     private final DrawAdminAppService drawAdminAppService;
+    private final AbilityTriggerAppService abilityTriggerAppService;
 
     @PostMapping
     @Operation(summary = "创建活动")
@@ -77,6 +79,13 @@ public class ActivityAdminController {
     @Operation(summary = "强制立即开奖")
     public Result<Void> triggerDraw(@PathVariable Long id) {
         drawAdminAppService.triggerDraw(id);
+        return Result.success();
+    }
+
+    @PostMapping("/{id}/ability/{code}")
+    @Operation(summary = "对指定活动手动触发能力（@Ability.backendTriggerable=true 的能力）")
+    public Result<Void> triggerAbility(@PathVariable Long id, @PathVariable String code) {
+        abilityTriggerAppService.trigger(id, code);
         return Result.success();
     }
 

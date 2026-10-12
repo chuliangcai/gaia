@@ -38,4 +38,26 @@ public @interface Ability {
      * <p>本能力无独立配置时填 {@link Void#TYPE}（默认值）。</p>
      */
     Class<?> configClass() default Void.class;
+
+    /**
+     * 是否允许后台管理端人工触发该能力。
+     *
+     * <p>默认 {@code false}：能力只通过 wire 上的 dispatcher / {@code assertType}
+     * 路径被调用，不会出现在后台"触发能力"选择列表中，也不接受管理端触发请求。</p>
+     *
+     * <p>当且仅当该值为 {@code true} 时：
+     * <ul>
+     *   <li>{@code AbilityMetaRegistry} 透出的 {@code AbilityDescriptor.backendTriggerable}
+     *   字段为 {@code true}；</li>
+     *   <li>{@code /api/admin/meta/abilities/triggerable} 端点会包含该能力；</li>
+     *   <li>管理端 {@code POST /api/admin/activity/{id}/ability/{code}} 会
+     *   真正调用 {@link com.gaia.iframework.core.IAbility#execute}。</li>
+     * </ul>
+     * </p>
+     *
+     * <p>设置该值为 {@code true} 前，请确保该能力的 {@code execute(ctx)} 语义
+     * 与"无用户上下文、由系统/管理员触发"的场景自洽（多数能力仍需要
+     * {@code userId / requestId} 等入参，强行启用会让运行期 preCheck 短路）。</p>
+     */
+    boolean backendTriggerable() default false;
 }

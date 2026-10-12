@@ -49,4 +49,10 @@ public class AbilityDescriptor implements Serializable {
      * 嵌套深度上限由 introspector 决定。
      */
     private Map<String, Object> configSchema;
+
+    /**
+     * 是否允许后台管理端人工触发（{@link com.gaia.iframework.annotation.Ability#backendTriggerable()}）。
+     * {@code true} 时该能力会出现在 {@code /api/admin/meta/abilities/triggerable} 与后台"触发能力"弹窗中。
+     */
+    private boolean backendTriggerable;
 }

@@ -108,6 +108,7 @@ public class AbilityMetaRegistry implements ApplicationContextAware {
                 .name(ann.name())
                 .configClassName(cfg == null ? Void.class.getName() : cfg.getName())
                 .configSchema(ConfigSchemaIntrospector.introspect(cfg))
+                .backendTriggerable(ann.backendTriggerable())
                 .build();
     }
 }

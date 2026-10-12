@@ -59,3 +59,17 @@ export async function listAbilities(bizNs) {
     return [];
   }
 }
+
+/**
+ * 列出所有可由后台触发的能力（@Ability.backendTriggerable=true）。
+ * 用于活动列表"触发能力"弹窗；后端会校验触发性，本接口只负责筛选。
+ */
+export async function listTriggerableAbilities() {
+  try {
+    const data = unwrap(await http.get('/admin/meta/abilities/triggerable'));
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    console.warn('listTriggerableAbilities failed:', e?.message || e);
+    return [];
+  }
+}

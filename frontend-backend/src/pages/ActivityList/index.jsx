@@ -9,21 +9,31 @@ import {
   message,
   Image,
 } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons';
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  ReloadOutlined,
+  ThunderboltOutlined,
+} from '@ant-design/icons';
 import {
   listActivities,
   createActivity,
   updateActivity,
   deleteActivity,
+  triggerAbility,
   statusToOption,
 } from '../../api/activity.js';
 import ActivityFormModal from '../../components/ActivityFormModal/index.jsx';
+import TriggerAbilityModal from '../../components/TriggerAbilityModal/index.jsx';
 
 export default function ActivityList() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [triggerOpen, setTriggerOpen] = useState(false);
+  const [triggerActivity, setTriggerActivity] = useState(null);
   const [msgApi, ctx] = message.useMessage();
 
   const reload = async () => {
@@ -75,6 +85,25 @@ export default function ActivityList() {
       reload();
     } catch (e) {
       msgApi.error(e.message || '保存失败');
+    }
+  };
+
+  const handleTrigger = (record) => {
+    setTriggerActivity(record);
+    setTriggerOpen(true);
+  };
+
+  const handleTriggerSubmit = async (code) => {
+    if (!triggerActivity) return;
+    try {
+      await triggerAbility(triggerActivity.id, code);
+      msgApi.success(`已触发：${code}`);
+      setTriggerOpen(false);
+      setTriggerActivity(null);
+      reload();
+    } catch (e) {
+      msgApi.error(e.message || '触发失败');
+      throw e;
     }
   };
 
@@ -148,6 +177,14 @@ export default function ActivityList() {
           <Button
             type="link"
             size="small"
+            icon={<ThunderboltOutlined />}
+            onClick={() => handleTrigger(record)}
+          >
+            触发能力
+          </Button>
+          <Button
+            type="link"
+            size="small"
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
           >
@@ -201,6 +238,16 @@ export default function ActivityList() {
         initial={editing}
         onCancel={() => setModalOpen(false)}
         onSubmit={handleSubmit}
+      />
+
+      <TriggerAbilityModal
+        open={triggerOpen}
+        activity={triggerActivity}
+        onCancel={() => {
+          setTriggerOpen(false);
+          setTriggerActivity(null);
+        }}
+        onSubmit={handleTriggerSubmit}
       />
     </>
   );
