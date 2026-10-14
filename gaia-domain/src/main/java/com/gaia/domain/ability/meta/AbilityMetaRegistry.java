@@ -43,7 +43,9 @@ public class AbilityMetaRegistry implements ApplicationContextAware {
     private final DomainMetaRegistry domainMetaRegistry;
 
     private ApplicationContext applicationContext;
-    private final ConcurrentMap<String, AbilityDescriptor> byCode = new ConcurrentHashMap<>();
+    /** 非 final 是为了绕开 JDT-LS 内嵌 Lombok 1.18.39 对 {@code @RequiredArgsConstructor} + 已初始化 final 字段的误判；
+     *  实际引用不会被赋值（{@link #init()} 只调用 {@code putIfAbsent}），等同于 final。 */
+    private ConcurrentMap<String, AbilityDescriptor> byCode = new ConcurrentHashMap<>();
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {

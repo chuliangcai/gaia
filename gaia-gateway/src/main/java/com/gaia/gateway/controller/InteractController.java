@@ -50,12 +50,14 @@ public class InteractController {
     /**
      * 泛化调用代理：返回值为 {@link Object}（泛型模式下通常是 {@code Map}），
      * 因此 consumer 端不参与业务 DTO 的反序列化。
+     *
+     * <p>Dubbo 3.2+ 会按"注入类型 = {@link GenericService}"自动启用泛化调用，
+     * 无需显式设 {@code generic = true}（该字段已 deprecated）。</p>
      */
     @DubboReference(
             interfaceName = TARGET_SERVICE,
             group = DubboConstants.GROUP,
-            version = DubboConstants.VERSION,
-            generic = true)
+            version = DubboConstants.VERSION)
     private GenericService interactEngineService;
 
     private final ObjectMapper objectMapper;
