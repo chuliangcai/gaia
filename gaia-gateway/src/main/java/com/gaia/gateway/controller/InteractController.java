@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * <p>本 controller 不做任何业务计算，仅透传 {@link GatewayMtopRequest}
  * 至 server 端的 {@code InteractEngineService}，由其上的
- * {@code AbilityDispatcher} 完成能力分派。</p>
+ * {@code AbilityEngine} 完成能力分派。</p>
  *
  * <p>所有由框架驱动的玩法功能均通过 {@code POST /api/interact} 触达，
  * 旧的 {@code /api/sign/*} 等 per-biz 路由已下线。</p>
@@ -70,7 +70,7 @@ public class InteractController {
      */
     @PostMapping
     @Operation(summary = "执行玩法",
-            description = "按请求体中 models 列出的能力，逐个分派至 server 端 AbilityDispatcher；"
+            description = "按请求体中 models 列出的能力，逐个分派至 server 端 AbilityEngine；"
                     + "返回各能力执行结果的聚合")
     public Result<InteractResultSet> execute(
             @RequestBody GatewayMtopRequest request,

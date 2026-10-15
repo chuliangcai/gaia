@@ -27,7 +27,8 @@ import java.util.Map;
  * 会员夺宝 玩法（{@code bizCode = "treasure"}）。
  *
  * <p>本类是全仓库唯一一个被
- * {@link com.gaia.app.framework.ExtensionRegistry#init()} 索引的 {@code @BizProduct} bean，
+ * {@link com.gaia.domain.ability.engine.ExtensionEngine#init()} 通过 {@code @BizProduct} 扫描到、
+ * 并进入其 {@code byBizCode} 索引的 BizProduct bean，
  * 承载该玩法下所有 {@code @Extension} 扩展点实现。</p>
  *
  * <p>v1 聚合了三个扩展点：
@@ -58,7 +59,7 @@ import java.util.Map;
  * <p>本类<strong>不是</strong> {@code @Ability}，<strong>不实现</strong>
  * {@link com.gaia.iframework.core.IAbility}，也<strong>不继承</strong>
  * {@link com.gaia.iframework.core.AbstractBaseAbility}——它只为扩展点机制服务，
- * 由 {@code AbilityDispatcher} 干净跳过。</p>
+ * 由 {@code AbilityEngine} 干净跳过。</p>
  */
 @Slf4j
 @Component

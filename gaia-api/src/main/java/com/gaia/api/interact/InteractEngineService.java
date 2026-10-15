@@ -7,7 +7,7 @@ import com.gaia.iframework.core.InteractResultSet;
  * 玩法互动引擎 — 框架唯一的 RPC 入口契约。
  *
  * <p>所有由 gateway 收口的玩法请求最终都通过该接口转发至 server 端，
- * 由 {@code AbilityDispatcher} 分派并聚合各能力执行结果。</p>
+ * 由 {@code AbilityEngine} 分派并聚合各能力执行结果。</p>
  */
 public interface InteractEngineService {
 

@@ -1,4 +1,4 @@
-package com.gaia.app.framework;
+package com.gaia.domain.ability.engine;
 
 import com.gaia.iframework.annotation.Ability;
 import com.gaia.iframework.core.GatewayMtopRequest;
@@ -14,6 +14,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -22,22 +23,26 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * 能力分派器。
+ * 能力引擎。
  *
  * <p>启动时按 {@link Ability#code()} 索引所有 {@link Ability}-annotated bean，
  * 之后对一笔玩法请求内的 {@link ModelRequest} 列表逐个分派并聚集成结果。</p>
  *
  * <p>当前 v1 按模型请求顺序串行执行，{@code GatewayMtopRequest.parallel} 标志
  * 保留不读，留待 v2 切到 {@code CompletableFuture} 并发。</p>
+ *
+ * <p>本类与 {@link com.gaia.domain.ability.meta.AbilityMetaRegistry} 共享同一份
+ * {@code @Ability} bean 扫描结果：引擎自身在 {@code @PostConstruct} 中建索引，
+ * 元数据注册表通过 {@link #snapshot()} 读，避免重复扫描。</p>
  */
 @Slf4j
 @Component
-public class AbilityDispatcher implements ApplicationContextAware {
+public class AbilityEngine implements ApplicationContextAware {
 
     private ApplicationContext applicationContext;
     private final ConcurrentMap<String, IAbility> abilities = new ConcurrentHashMap<>();
 
-    public AbilityDispatcher() {
+    public AbilityEngine() {
     }
 
     @Override
@@ -64,7 +69,7 @@ public class AbilityDispatcher implements ApplicationContextAware {
             log.info("registered @Ability code={} bizNs={} name={} impl={}",
                     code, ann.bizNs(), ann.name(), bean.getClass().getSimpleName());
         }
-        log.info("AbilityDispatcher initialized, abilityCount={}", abilities.size());
+        log.info("AbilityEngine initialized, abilityCount={}", abilities.size());
     }
 
     /**
@@ -97,6 +102,18 @@ public class AbilityDispatcher implements ApplicationContextAware {
             }
         }
         return out;
+    }
+
+    /**
+     * 当前已注册能力的不可变快照。
+     *
+     * <p>供同模块的 {@link com.gaia.domain.ability.meta.AbilityMetaRegistry}
+     * 在自身 {@code @PostConstruct} 中读取，以避免重复扫描 {@code @Ability} bean。</p>
+     *
+     * @return code → {@link IAbility} 的不可变视图
+     */
+    public Map<String, IAbility> snapshot() {
+        return Collections.unmodifiableMap(abilities);
     }
 
     private RequestContext toContext(GatewayMtopRequest req, ModelRequest m) {

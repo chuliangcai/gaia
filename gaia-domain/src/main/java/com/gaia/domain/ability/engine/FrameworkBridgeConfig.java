@@ -1,4 +1,4 @@
-package com.gaia.app.framework;
+package com.gaia.domain.ability.engine;
 
 import com.gaia.iframework.core.AbstractBaseAbility;
 import com.gaia.iframework.core.IAbilityExt;
@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * 框架静态桥接配置。
  *
- * <p>将容器侧 {@link ExtensionRegistry} 的查找能力注册到
+ * <p>将容器侧 {@link ExtensionEngine} 的查找能力注册到
  * {@link AbstractBaseAbility.AbilityExtHolder}，
  * 使得 {@code AbstractBaseAbility#reduceExecute(...)}（位于 gaia-common，无 Spring 依赖）
  * 能跨容器边界找到具体扩展点实例。</p>
@@ -24,17 +24,17 @@ import org.springframework.context.annotation.Configuration;
 @RequiredArgsConstructor
 public class FrameworkBridgeConfig {
 
-    private final ExtensionRegistry extensionRegistry;
+    private final ExtensionEngine extensionEngine;
 
     /**
-     * 启动时把 {@code ExtensionRegistry::lookup} 注入到框架侧静态桥。
+     * 启动时把 {@code ExtensionEngine::lookup} 注入到框架侧静态桥。
      */
     @Bean
-    public ApplicationRunner bridgeExtensionRegistry() {
+    public ApplicationRunner bridgeExtensionEngine() {
         return (ApplicationRunner) (ApplicationArguments args) -> {
             AbstractBaseAbility.AbilityExtHolder.register(
-                    (bizCode, extCode) -> extensionRegistry.lookup(bizCode, extCode, IAbilityExt.class));
-            log.info("framework bridge registered: AbstractBaseAbility.AbilityExtHolder -> ExtensionRegistry");
+                    (bizCode, extCode) -> extensionEngine.lookup(bizCode, extCode, IAbilityExt.class));
+            log.info("framework bridge registered: AbstractBaseAbility.AbilityExtHolder -> ExtensionEngine");
         };
     }
 }
