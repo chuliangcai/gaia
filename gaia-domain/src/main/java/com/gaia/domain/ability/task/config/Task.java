@@ -1,6 +1,7 @@
 package com.gaia.domain.ability.task.config;
 
 import com.fasterxml.jackson.annotation.JsonClassDescription;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,6 +30,7 @@ public class Task implements Serializable {
     @JsonPropertyDescription("任务 ID")
     private Long id;
 
+    @JsonProperty(required = true)
     @JsonPropertyDescription("任务名称")
     private String taskName;
 
@@ -36,10 +38,12 @@ public class Task implements Serializable {
     private String taskDesc;
 
     /** 每执行一次发放几个夺宝码 */
+    @JsonProperty(required = true)
     @JsonPropertyDescription("单次奖励数")
     private Integer rewardCount;
 
     /** 单用户最多执行次数 */
+    @JsonProperty(required = true)
     @JsonPropertyDescription("单人最大次数")
     private Integer maxExecutions;
 
@@ -48,6 +52,7 @@ public class Task implements Serializable {
     private Integer sortOrder;
 
     /** 0=禁用,1=启用 */
+    @JsonProperty(required = true)
     @JsonPropertyDescription("启用状态")
     private Integer status;
 

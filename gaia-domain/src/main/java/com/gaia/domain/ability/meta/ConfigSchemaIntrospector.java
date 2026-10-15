@@ -1,6 +1,7 @@
 package com.gaia.domain.ability.meta;
 
 import com.fasterxml.jackson.annotation.JsonClassDescription;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import org.springframework.core.annotation.AnnotationUtils;
 
@@ -29,9 +30,19 @@ import java.util.Map;
  *   {@code enum}                                          → {"type":"string","enum":[...]}
  *   {@code List<E>/Collection<E>/E[]}                     → {"type":"array","items":<schema-of-E>}
  *   {@code Map<K,V>}                                      → {"type":"object"}
- *   其他 POJO                                              → {"type":"object","properties":{...}}
+ *   其他 POJO                                              → {"type":"object","properties":{...},"required":[...]}
  *   深度超过 {@link #MAX_DEPTH} 或自引用类型                  → {"type":"object"} 兜底
  * </pre>
+ *
+ * <p>{@code required} 数组遵循 OpenAPI/JSON Schema 标准：仅包含本对象直接
+ * {@code properties} 的字段名（不含嵌套对象的字段）。字段被标记为必填的两条规则:
+ * <ul>
+ *   <li>Java primitive 类型（{@code int/long/boolean/double/float/short/byte/char}） —
+ *       语言层保证非 null，零配置视为必填；</li>
+ *   <li>{@code @JsonProperty(required = true)} — Jackson 自带注解，与现有
+ *       {@code @JsonClassDescription} / {@code @JsonPropertyDescription} 风格一致。</li>
+ * </ul>
+ * wrapper 类型（{@code Integer/Long/...}）必须显式标注才算必填。</p>
  *
  * <p>输出类型为 {@code Map<String,Object>}，便于直接通过 Jackson / Spring 序列化到 wire。</p>
  */
@@ -157,6 +168,7 @@ public final class ConfigSchemaIntrospector {
         }
 
         Map<String, Object> properties = new LinkedHashMap<>();
+        List<String> required = new ArrayList<>();
         // 简单对所有非 static / 非 transient / 非 serialVersionUID 字段建模
         for (Field f : pojoType.getDeclaredFields()) {
             int mods = f.getModifiers();
@@ -167,9 +179,24 @@ public final class ConfigSchemaIntrospector {
             if ("serialVersionUID".equals(name)) {
                 continue;
             }
+            // 必填判定（按 OpenAPI/JSON Schema 语义）:
+            //   1) Java primitive 类型 — 语言层保证非 null，零配置视为必填；
+            //   2) @JsonProperty(required = true) — Jackson 自带注解，与现有
+            //      @JsonClassDescription/@JsonPropertyDescription 风格一致。
+            // 注意:wrapper 类型(Integer/Long/...)不算 primitive，必须显式标注。
+            if (f.getType().isPrimitive()) {
+                required.add(name);
+            } else {
+                JsonProperty jp = AnnotationUtils.findAnnotation(f, JsonProperty.class);
+                if (jp != null && jp.required()) {
+                    required.add(name);
+                }
+            }
             Map<String, Object> propSchema = describeFieldType(f.getGenericType(), depth + 1, next);
             // 字段层级中文名（@JsonPropertyDescription）→ property 节点 description。
             // 前端表单 label 优先取此值，缺省时降级 humanize()。
+            // 必填字段可在 wrapper 类型字段上叠加 @JsonProperty(required = true)，
+            // introspector 会把字段名收进 object 节点的 required 数组。
             JsonPropertyDescription fieldAnn = AnnotationUtils.findAnnotation(f, JsonPropertyDescription.class);
             if (fieldAnn != null && !fieldAnn.value().isEmpty()) {
                 propSchema.put("description", fieldAnn.value());
@@ -178,6 +205,9 @@ public final class ConfigSchemaIntrospector {
         }
         if (!properties.isEmpty()) {
             schema.put("properties", properties);
+        }
+        if (!required.isEmpty()) {
+            schema.put("required", required);
         }
         return schema;
     }

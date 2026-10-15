@@ -3,7 +3,7 @@ package com.gaia.app.bizproduct.treasure;
 import com.gaia.domain.ability.draw.ext.CalculateProbabilityExt;
 import com.gaia.domain.ability.draw.ext.IssuePrizeExt;
 import com.gaia.domain.ability.task.dto.RewardIssueResult;
-import com.gaia.domain.ability.treasure.ext.TaskRewardIssueExt;
+import com.gaia.domain.ability.task.ext.TaskRewardIssueExt;
 import com.gaia.domain.base.activity.Activity;
 import com.gaia.domain.draw.DrawCandidate;
 import com.gaia.domain.draw.DrawWinner;

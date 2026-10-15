@@ -11,7 +11,7 @@ import java.io.Serializable;
 /**
  * 任务奖励发放扩展点的单条结果。
  *
- * <p>{@link com.gaia.domain.ability.treasure.ext.TaskRewardIssueExt#issue} 返回
+ * <p>{@link com.gaia.domain.ability.task.ext.TaskRewardIssueExt#issue} 返回
  * {@code List<RewardIssueResult>}，每条记录描述一次发放产生的单条权益：</p>
  * <ul>
  *   <li>{@link #benefitType} — 权益类型（夺宝码 / 中奖奖品 / 优惠券等）。</li>

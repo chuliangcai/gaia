@@ -6,7 +6,7 @@ import com.gaia.domain.ability.task.config.Task;
 import com.gaia.domain.ability.task.config.TaskConfig;
 import com.gaia.domain.ability.task.dto.RewardIssueResult;
 import com.gaia.domain.ability.task.dto.TaskExecuteResultDTO;
-import com.gaia.domain.ability.treasure.ext.TaskRewardIssueExt;
+import com.gaia.domain.ability.task.ext.TaskRewardIssueExt;
 import com.gaia.domain.base.activity.ActionType;
 import com.gaia.domain.base.activity.Activity;
 import com.gaia.domain.base.activity.ActivityRecord;

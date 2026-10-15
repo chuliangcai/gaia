@@ -1,4 +1,4 @@
-package com.gaia.domain.ability.treasure.ext;
+package com.gaia.domain.ability.task.ext;
 
 import com.gaia.domain.ability.task.dto.RewardIssueResult;
 import com.gaia.iframework.annotation.AbilityExtension;

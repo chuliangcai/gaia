@@ -24,6 +24,8 @@ import dayjs from 'dayjs';
  *   - object + properties           → 嵌套 Form.Item
  *   - array                         → Form.List（添加/删除按钮）
  *   - 其他 / 自引用 / 超深度         → JSON TextArea 兜底
+ *   - object.properties 项 / array.items.properties 项的 `required`
+ *     数组命中 → 对应 Form.Item 注入 `rules: [{ required: true }]`
  *
  * props:
  *   - formPath: (string | number)[]   父 Form 上的 name 路径
@@ -103,7 +105,7 @@ function SchemaNode({ schema, path, value, onChange }) {
             return (
               <div key={k}>
                 <div style={{ marginBottom: 4 }}>{label}</div>
-                <ArrayField schema={sub} path={[...path, k]} />
+                <ArrayField schema={sub} path={[...path, k]} required={isKeyRequired(schema.required, k)} />
               </div>
             );
           }
@@ -113,6 +115,7 @@ function SchemaNode({ schema, path, value, onChange }) {
               name={[...path, k]}
               label={label}
               style={{ marginBottom: 0 }}
+              rules={isKeyRequired(schema.required, k) ? [requiredRule(label)] : undefined}
             >
               <SchemaNode schema={sub} path={[...path, k]} />
             </Form.Item>
@@ -159,7 +162,7 @@ function ctrlPropsFor(schema, value, onChange) {
  *   - items: { type: 'object', properties: {…} } → 每条渲染一组字段（用相对名）
  *   - 其他 / 简单类型 → 每条渲染一个原生控件
  */
-function ArrayField({ schema, path }) {
+function ArrayField({ schema, path, required }) {
   return (
     <Form.List name={path}>
       {(fields, { add, remove }) => (
@@ -179,18 +182,26 @@ function ArrayField({ schema, path }) {
             >
               <div style={{ flex: 1 }}>
                 {schema.items && schema.items.properties
-                  ? Object.entries(schema.items.properties).map(([k, sub]) => (
-                      <Form.Item
-                        key={k}
-                        name={[field.name, k]}
-                        label={sub?.description || humanize(k)}
-                        style={{ marginBottom: 8 }}
-                      >
-                        <SchemaNode schema={sub} path={[field.name, k]} />
-                      </Form.Item>
-                    ))
+                  ? Object.entries(schema.items.properties).map(([k, sub]) => {
+                      const label = sub?.description || humanize(k);
+                      return (
+                        <Form.Item
+                          key={k}
+                          name={[field.name, k]}
+                          label={label}
+                          style={{ marginBottom: 8 }}
+                          rules={isKeyRequired(schema.items?.required, k) ? [requiredRule(label)] : undefined}
+                        >
+                          <SchemaNode schema={sub} path={[field.name, k]} />
+                        </Form.Item>
+                      );
+                    })
                   : (
-                      <Form.Item name={field.name} style={{ marginBottom: 0 }}>
+                      <Form.Item
+                        name={field.name}
+                        style={{ marginBottom: 0 }}
+                        rules={required ? [requiredRule('该项')] : undefined}
+                      >
                         <SchemaNode schema={schema.items || { type: 'object' }} path={[]} />
                       </Form.Item>
                     )}
@@ -238,4 +249,16 @@ function emptyValueFor(schema) {
 
 function safeParse(s) {
   try { return JSON.parse(s); } catch { return s; }
+}
+
+/**
+ * 把后端 schema 上的 `required: [...]` 命中键转成 Form.Item 的 rules。
+ * 数组自身是否必填（数组不能为空）由调用方通过 `required` prop 传入。
+ */
+function isKeyRequired(requiredArr, key) {
+  return Array.isArray(requiredArr) && requiredArr.includes(key);
+}
+
+function requiredRule(label) {
+  return { required: true, message: `请填写${label || '该项'}` };
 }
