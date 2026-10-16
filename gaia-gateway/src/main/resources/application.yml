@@ -1,8 +1,8 @@
 # =========================================================
-# Gaia Gateway 公共配置（被 dev / test / prod 等 profile 共用）
-# profile 切换通过环境变量 SPRING_PROFILES_ACTIVE；
-#   - dev  : 本地直连（绕过注册中心）
-#   - test : K8s 注册中心（kind / staging / 生产）
+# Gaia Gateway（C 端 HTTP 入口，端口 8090）唯一配置
+# 默认即本地开发：Dubbo 注册中心 = 宿主机 localhost 上的 Zookeeper
+#   - 端口 / 服务名 / Springdoc / 管理端点等与运行环境无关的配置直接写在主文档
+#   - Dubbo / Redis 等连接参数用 ${ENV:default} 形式可被环境变量覆盖
 # =========================================================
 
 server:
@@ -13,11 +13,40 @@ server:
 spring:
   application:
     name: gaia-gateway
-  profiles:
-    # 默认 dev（本地开发，docker-compose 起 ZK 即可）；test / prod 通过 -Dspring.profiles.active= 或 SPRING_PROFILES_ACTIVE 切换
-    active: ${SPRING_PROFILES_ACTIVE:dev}
   main:
     allow-bean-definition-overriding: true
+  # ===================== Redis（Spring Session 存储后端） =====================
+  # gateway 通过 HttpSession 持有"当前用户 ID"，由 Spring Session 自动写入 Redis。
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+      timeout: 2000ms
+  session:
+    # 切完用户保持 2 小时，足够本地调试
+    timeout: 2h
+    redis:
+      namespace: gaia:session
+
+# ===================== Dubbo（Zookeeper 注册中心） =====================
+dubbo:
+  application:
+    name: gaia-gateway
+    qos-enable: false
+    protocol: tri
+  registry:
+    address: zookeeper://${DUBBO_REGISTRY_ADDRESS:localhost:2181}?timeout=10000
+  protocol:
+    name: tri
+    port: -1
+  consumer:
+    check: false
+    timeout: 3000
+    retries: 0
+  cloud:
+    enabled: false
 
 # ===================== Springdoc OpenAPI =====================
 springdoc:
@@ -56,8 +85,8 @@ management:
 logging:
   level:
     root: INFO
-    com.gaia: INFO
-    org.apache.dubbo: WARN
+    com.gaia: DEBUG
+    org.apache.dubbo: INFO
   pattern:
     # opentelemetry-logback-mdc-1.0 把 trace_id / span_id 写入 MDC（区别于之前 brave 的 traceId/spanId）。
     console: "%d{HH:mm:ss.SSS} [%thread] [trace_id=%X{trace_id:-} span_id=%X{span_id:-}] %-5level %logger{36} - %msg%n"

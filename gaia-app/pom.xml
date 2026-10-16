@@ -29,7 +29,7 @@
             <artifactId>gaia-api</artifactId>
         </dependency>
 
-        <!-- Dubbo（Zookeeper 注册中心，dubbo-kubernetes 仅 K8s 注册模式需要） -->
+        <!-- Dubbo（Zookeeper 注册中心） -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-spring-boot-starter</artifactId>

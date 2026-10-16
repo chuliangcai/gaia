@@ -96,11 +96,6 @@
                 <artifactId>dubbo</artifactId>
                 <version>${dubbo.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-kubernetes</artifactId>
-                <version>${dubbo.version}</version>
-            </dependency>
             <!-- Dubbo 与 ZK 通信的 Curator 客户端封装（dubbo-spring-boot-starter 不会传递依赖 curator） -->
             <dependency>
                 <groupId>org.apache.curator</groupId>
@@ -289,15 +284,14 @@
             </properties>
         </profile>
 
-        <!-- gaia-bootstrap: dev 参数（默认 dev profile，Dubbo 注册到 localhost ZK） -->
+        <!-- gaia-bootstrap: dev 参数（默认连接宿主机 localhost 上的 ZK） -->
         <profile>
             <id>dev-bootstrap</id>
             <properties>
                 <spring-boot.run.mainClass>com.gaia.bootstrap.GaiaBootstrapApplication</spring-boot.run.mainClass>
-                <spring.profiles.active>dev</spring.profiles.active>
                 <otel.exporter.otlp.traces.endpoint>http://127.0.0.1:4318/v1/traces</otel.exporter.otlp.traces.endpoint>
                 <jvm.add-opens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED</jvm.add-opens>
-                <spring-boot.jvmArguments>${jvm.add-opens} -Dspring.profiles.active=${spring.profiles.active} -DOTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${otel.exporter.otlp.traces.endpoint} -DMYSQL_PASSWORD=12345 -Ddubbo.security.serialize.allowedClassList=${dubbo.allowed.class.list}</spring-boot.jvmArguments>
+                <spring-boot.jvmArguments>${jvm.add-opens} -DOTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${otel.exporter.otlp.traces.endpoint} -DMYSQL_PASSWORD=12345 -Ddubbo.security.serialize.allowedClassList=${dubbo.allowed.class.list}</spring-boot.jvmArguments>
             </properties>
         </profile>
 
@@ -306,23 +300,21 @@
             <id>dev-gateway</id>
             <properties>
                 <spring-boot.run.mainClass>com.gaia.gateway.GaiaGatewayApplication</spring-boot.run.mainClass>
-                <spring.profiles.active>dev</spring.profiles.active>
                 <otel.exporter.otlp.traces.endpoint>http://127.0.0.1:4318/v1/traces</otel.exporter.otlp.traces.endpoint>
                 <jvm.add-opens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED</jvm.add-opens>
-                <spring-boot.jvmArguments>${jvm.add-opens} -Dspring.profiles.active=${spring.profiles.active} -DOTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${otel.exporter.otlp.traces.endpoint} -Ddubbo.security.serialize.allowedClassList=${dubbo.allowed.class.list}</spring-boot.jvmArguments>
+                <spring-boot.jvmArguments>${jvm.add-opens} -DOTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${otel.exporter.otlp.traces.endpoint} -Ddubbo.security.serialize.allowedClassList=${dubbo.allowed.class.list}</spring-boot.jvmArguments>
             </properties>
         </profile>
 
-        <!-- gaia-backend: dev 参数，独立端口 8088，关闭 Dubbo 注册推送 -->
+        <!-- gaia-backend: dev 参数，独立端口 8092，关闭 Dubbo 注册推送 -->
         <profile>
             <id>dev-backend</id>
             <properties>
                 <spring-boot.run.mainClass>com.gaia.backend.GaiaBackendApplication</spring-boot.run.mainClass>
-                <spring.profiles.active>dev</spring.profiles.active>
                 <otel.exporter.otlp.traces.endpoint>http://127.0.0.1:4318/v1/traces</otel.exporter.otlp.traces.endpoint>
                 <dubbo.registry.register>false</dubbo.registry.register>
                 <jvm.add-opens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED</jvm.add-opens>
-                <spring-boot.jvmArguments>${jvm.add-opens} -Dspring.profiles.active=${spring.profiles.active} -Ddubbo.registry.register=${dubbo.registry.register} -DOTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${otel.exporter.otlp.traces.endpoint} -DMYSQL_PASSWORD=12345 -Ddubbo.security.serialize.allowedClassList=${dubbo.allowed.class.list}</spring-boot.jvmArguments>
+                <spring-boot.jvmArguments>${jvm.add-opens} -Ddubbo.registry.register=${dubbo.registry.register} -DOTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${otel.exporter.otlp.traces.endpoint} -DMYSQL_PASSWORD=12345 -Ddubbo.security.serialize.allowedClassList=${dubbo.allowed.class.list}</spring-boot.jvmArguments>
             </properties>
         </profile>
     </profiles>

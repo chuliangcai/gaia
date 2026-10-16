@@ -9,7 +9,7 @@
 | ---------- | ------------------------------------------- |
 | JDK / 框架   | JDK 17 / Spring Boot 3.2.x                  |
 | RPC        | Apache Dubbo 3.3.x（Triple / HTTP/2）         |
-| 注册中心       | Kubernetes API（`kubernetes://`）              |
+| 注册中心       | Zookeeper 3.x（`zookeeper://`）                |
 | 缓存 / 锁     | Redis（Jedis：BitMap + SETNX）                 |
 | 数据库        | MySQL 8.0 + MyBatis-Plus 3.5.x              |
 | 监控         | Micrometer + Prometheus                     |
@@ -34,6 +34,8 @@ gaia/
 └── frontend-backend/                 # 活动管理后台（React + AntD）
 ```
 
+> 每个启动模块只保留一份 `src/main/resources/application.yml`，不再按 `application-{dev,test}.yml` 切 profile。
+
 ## 关键约束
 
 - gaia-app：**仅** `@DubboService(group="…", version="1.0.0")` 与 `@Service` 等业务注解，**不**含 HTTP 业务注解，**不**含启动类。
@@ -45,8 +47,8 @@ gaia/
   - `gaia-bootstrap` → `gaia-app`、`gaia-infra`
   - `gaia-backend` → `gaia-domain`、`gaia-common`
   - `gaia-infra` → `gaia-domain`（实现领域层 Repository 接口）
-- 注册中心当前使用 Zookeeper（docker-compose 启 `zookeeper:latest`，端口 2181），原 Kubernetes Service Discovery 已下线。
-- 所有 HTTPS / TLS / 域名 均**未启用**，Ingress 仅做 `pathType: Prefix`。
+- 注册中心使用 Zookeeper（`zookeeper:latest`，端口 2181）。
+- 每个启动模块（gaia-bootstrap / gaia-gateway / gaia-backend）只保留一份 `application.yml`，无 profile 切换；连接参数通过环境变量覆盖。
 
 ## 本地启动
 
@@ -63,14 +65,11 @@ mysql -h127.0.0.1 -uroot -p12345 < gaia-bootstrap/src/main/resources/db/schema.s
 mvn -DskipTests clean package
 
 # 4. 启动三个进程（注意 Mac 多网卡环境下必须显式指定 DUBBO_IP_TO_BIND/REGISTRY，见下方"踩坑"）
-SPRING_PROFILES_ACTIVE=dev \
-  DUBBO_IP_TO_BIND=192.168.31.48 DUBBO_IP_TO_REGISTRY=192.168.31.48 \
+DUBBO_IP_TO_BIND=192.168.31.48 DUBBO_IP_TO_REGISTRY=192.168.31.48 \
   java -jar gaia-bootstrap/target/gaia-bootstrap.jar   # 应用进程（Dubbo Provider + HTTP 8091）
-SPRING_PROFILES_ACTIVE=dev \
-  DUBBO_IP_TO_BIND=192.168.31.48 DUBBO_IP_TO_REGISTRY=192.168.31.48 \
+DUBBO_IP_TO_BIND=192.168.31.48 DUBBO_IP_TO_REGISTRY=192.168.31.48 \
   java -jar gaia-gateway/target/gaia-gateway.jar       # C 端 HTTP，端口 8090
-SPRING_PROFILES_ACTIVE=dev \
-  DUBBO_IP_TO_BIND=192.168.31.48 DUBBO_IP_TO_REGISTRY=192.168.31.48 \
+DUBBO_IP_TO_BIND=192.168.31.48 DUBBO_IP_TO_REGISTRY=192.168.31.48 \
   MYSQL_PASSWORD=12345 \
   java -jar gaia-backend/target/gaia-backend.jar       # 管理端 HTTP，端口 8092
 
@@ -94,9 +93,8 @@ cd frontend-backend && pnpm install && pnpm dev    # http://localhost:5174
    两端保持一致即可。不能用 `127.0.0.1` —— Dubbo 会校验该 IP 必须属于本机某张网卡，loopback 被拒。
 
 2. **MySQL / Redis 密码与端口**：
-   - `gaia-bootstrap` 的 dev 配置默认 `MYSQL_PASSWORD=12345`，与本仓库 docker-compose 起的 MySQL 一致，**无需**额外参数。
-   - `gaia-backend` 的 dev 配置默认 `MYSQL_PASSWORD=root`，需要覆盖：`MYSQL_PASSWORD=12345`。
-   - 若 Redis 容器把 6379 映射到了宿主 `6380`，需 `REDIS_PORT=6380`（dev 配置默认值是 6379）。
+   - `gaia-bootstrap` / `gaia-backend` 默认 `MYSQL_PASSWORD=12345`，与本仓库 docker 起的 MySQL 一致，**无需**额外参数。
+   - `gaia-backend` / `gaia-bootstrap` 默认 `REDIS_PORT=6380`（匹配宿主 6380 → 容器 6379 的端口映射）；`gaia-gateway` 默认 `REDIS_PORT=6379`。
 
 3. **Docker 启动示例（端口映射按本机实际为准）**：
    ```bash
@@ -117,16 +115,6 @@ curl 'http://localhost:8090/actuator/prometheus'
 
 # 管理端 - 活动列表（需 gaia-backend 已启动，端口 8092）
 curl 'http://localhost:8092/api/admin/activity/list'
-```
-
-## K8s 部署
-
-```bash
-kubectl create namespace gaia
-kubectl apply -f deploy/k8s/gaia-gateway.yaml      # 含 SA / ClusterRoleBinding
-kubectl apply -f deploy/k8s/gaia-app.yaml
-kubectl apply -f deploy/k8s/gaia-backend.yaml
-kubectl apply -f deploy/k8s/gateway-ingress.yaml
 ```
 
 ## 后续路线
